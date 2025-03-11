@@ -34,7 +34,7 @@ const taskInstructions = {
             <p>Here is a slowed-down example of the kind of decisions you'll have to make:</p>
 
             <div class="example-animation">
-                <img src="images/instruction.gif" alt="Task example" style="max-width: 60%; border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                <img src="https://raw.githubusercontent.com/Sepsad/Teacher_Pupil/a0cc4fd16911c1c91c56ccc21c14eb2310a68b4a/images/Instruction.gif" alt="Task example" style="max-width: 60%; border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
             </div>
    
             <p>This is someone choosing the option on the left and winning +10 points.</p>
