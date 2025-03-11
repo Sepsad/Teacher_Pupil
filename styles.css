@@ -1,0 +1,140 @@
+/* Basic styling for the experiment container */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Styling for the squares */
+.square-option {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #333;
+    cursor: pointer;
+    margin: 10px;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; /* Added for text positioning */
+    color: white; /* Text color for readability */
+    font-weight: bold; /* Make text more visible */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Add shadow for better contrast */
+    display: flex; /* For centering text */
+    align-items: center;
+    justify-content: center;
+}
+
+.square-option:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.square-option.selected {
+    box-shadow: 0 0 15px gold, 0 0 5px rgba(0,0,0,0.5);
+    border: 3px solid gold;
+}
+
+/* Adding !important to ensure colors are applied */
+.square-blue {
+    background-color: #3498db !important;
+}
+
+.square-red {
+    background-color: #e74c3c !important;
+}
+
+/* New styling for the background frame */
+.squares-frame {
+    background-color: #f0f0f0;
+    border: 3px solid #999;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 0 auto;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+/* Hatched pattern frame */
+.squares-frame.hatched {
+    background-image: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #ddd 10px, #ddd 20px);
+}
+
+/* Triangle indicator for hatched with triangle frame */
+.triangle-indicator {
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 35px solid #999;
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Adjusted option-container for the new frame */
+.option-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.option-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 20px;
+}
+
+.reward-display {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: #2ecc71;
+}
+
+/* Styling for general displays */
+.total-display {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.trial-info {
+    margin-bottom: 20px;
+}
+
+/* Styling for instructions */
+.instructions {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Button styling */
+.continue-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    display: block;
+}
+
+.continue-btn:hover {
+    background-color: #45a049;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Add this to ensure buttons display properly */
+.jspsych-html-button-response-btngroup {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    width: 100%;
+}
