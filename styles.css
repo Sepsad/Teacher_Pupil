@@ -175,3 +175,32 @@ body {
     font-weight: bold;
     margin-bottom: 10px;
 }
+
+/* Styling for teaching text entry */
+.text-entry-container {
+    margin: 20px auto;
+    width: 80%;
+    max-width: 600px;
+}
+
+#teaching-text {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    resize: vertical;
+}
+
+#teaching-text:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+#char-count {
+    margin-top: 5px;
+    text-align: right;
+    font-size: 14px;
+    color: red;
+}

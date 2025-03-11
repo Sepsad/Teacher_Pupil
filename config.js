@@ -21,7 +21,7 @@ const settings = {
             id: 'plain',      // Plain background, red rewarding
             proportion: 0.5,  // 50% of trials
             frameClass: '',
-            rewardingOption: 0, // 1 is the second color in the pair
+            rewardingOption: 1, // 1 is the second color in the pair
             reward: 10          // Fixed reward value
         },
         {
