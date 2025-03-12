@@ -9,28 +9,35 @@ This document explains each data field recorded during the experiment for proper
 | Field | Type | Description |
 |-------|------|-------------|
 | `trial_index` | Integer | Sequential index of the trial within the entire experiment |
+| `condition_trial_index` | Integer | Sequential index of the trial within a specific condition type |
 | `task` | String | Type of trial ('choice', 'feedback', 'test', 'teaching_text') |
-| `rt` | Float | Response time in milliseconds |
 | `trial_type_id` | String | The condition ID ('plain', 'hatched', 'triangle') |
+| `block_type` | String | Type of block ('learning', 'test') |
 | `square_order` | Array | Order of squares presented [0,1] or [1,0] |
+| `pair_id` | String | Unique identifier for the color pair shown (e.g., '#3498db-#e74c3c') |
 | `rewarding_option` | Integer | The option that gives reward (0 or 1) |
 | `reward_probability` | Float | Probability (0-1) that the rewarding option gives reward |
+| `rt` | Float | Response time in milliseconds |
+| `accuracy` | Integer | 1 if participant chose the rewarding option, 0 otherwise |
 
-### Choice Trial Fields
+### Choice and Test Trial Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `response` | Integer | Index of selected option (0 or 1) |
-| `chosen_option` | Integer | Same as response, the option chosen by participant |
-| `rewarding_option` | Integer | The option that gives reward (0 or 1) |
+| `chosen_option` | Integer | Option chosen by participant (0 or 1) |
+| `unchosen_option` | Integer | Option not chosen by participant (0 or 1) |
+| `chosen_color` | String | Hex color code of the chosen square |
+| `unchosen_color` | String | Hex color code of the unchosen square |
+| `chosen_reward_probability` | Float | Reward probability of the chosen option |
+| `unchosen_reward_probability` | Float | Reward probability of the unchosen option |
+| `chosen_reward_points` | Integer | Maximum possible points from chosen option |
+| `unchosen_reward_points` | Integer | Maximum possible points from unchosen option |
 | `reward` | Integer | Points earned from the choice (typically 0 or 10) |
 | `total_reward` | Integer | Cumulative points earned up to this trial |
-
-### Test Phase Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `phase` | String | Indicates 'test' for the test phase trials |
+| `color_left` | String | Color of the left square |
+| `color_right` | String | Color of the right square |
+| `color_mapping` | Object | Mapping of option indices to colors |
 
 ### Quiz Fields
 

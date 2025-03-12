@@ -342,6 +342,9 @@ function createFinalScreen() {
 
 // Create choice trial
 function createChoiceTrial(trialType, trialIndex, squareOrder) {
+    // Calculate condition-specific trial index
+    const conditionTrialCounts = {};
+    
     return {
         type: jsPsychHtmlButtonResponse,
         stimulus: function() {
@@ -352,12 +355,13 @@ function createChoiceTrial(trialType, trialIndex, squareOrder) {
         margin_vertical: "80px",
         margin_horizontal: "40px",
         data: {
-            trial_index: trialIndex,
+            trial_index: trialIndex,  // 1) Trial number (whole experiment)
             task: 'choice',
             square_order: squareOrder,
             trial_type_id: trialType.id,
             rewarding_option: trialType.rewardingOption,
-            reward_probability: trialType.probability
+            reward_probability: trialType.probability,
+            block_type: 'learning'  // 16) Block type
         },
         on_start: function(trial) {
             // Add event listeners after the trial renders
@@ -379,13 +383,31 @@ function createChoiceTrial(trialType, trialIndex, squareOrder) {
         },
         on_finish: function(data) {
             const chosenOption = data.response;
+            const unchosenOption = chosenOption === 0 ? 1 : 0;
             const reward = getReward(chosenOption, trialType);
             settings.totalReward += reward;
             
-            // Store these for the next trial
-            data.chosen_option = chosenOption;
-            data.reward = reward;
-            data.total_reward = settings.totalReward;
+            // Get condition-specific trial index
+            if (!conditionTrialCounts[trialType.id]) {
+                conditionTrialCounts[trialType.id] = 0;
+            }
+            const conditionTrialIndex = conditionTrialCounts[trialType.id]++;
+            
+            // Store all required data fields
+            data.chosen_option = chosenOption;                       // 8) Chosen square ID
+            data.unchosen_option = unchosenOption;                   // 9) Unchosen square ID
+            data.condition_trial_index = conditionTrialIndex;        // 2) Trial number for this condition
+            data.chosen_color = settings.option_colors[squareOrder[data.response]]; // 3) Color of chosen square
+            data.unchosen_color = settings.option_colors[squareOrder[unchosenOption]]; // 4) Color of unchosen square
+            data.pair_id = settings.option_colors.join('-');         // 5) Pair ID
+            data.chosen_reward_probability = trialType.rewardingOption === chosenOption ? trialType.probability : 0; // 6) Reward probs of chosen
+            data.unchosen_reward_probability = trialType.rewardingOption === unchosenOption ? trialType.probability : 0; // 7) Reward probs of unchosen
+            data.chosen_reward_points = trialType.rewardingOption === chosenOption ? trialType.reward : 0; // 10) Reward points of chosen
+            data.unchosen_reward_points = trialType.rewardingOption === unchosenOption ? trialType.reward : 0; // 11) Reward points of unchosen
+            data.reward = reward;                                    // 12) Actual reward obtained
+            data.total_reward = settings.totalReward;                // 13) Cumulative reward
+            data.accuracy = chosenOption === trialType.rewardingOption ? 1 : 0; // 14) Accuracy
+            // 15) Response time (rt) is already stored by jsPsych
             
             // Store color information
             data.color_left = settings.option_colors[squareOrder[0]];
@@ -463,6 +485,9 @@ function generateTestTrialSequence() {
 
 // Create test choice trial (no feedback)
 function createTestTrial(trialType, trialIndex, squareOrder) {
+    // Calculate condition-specific trial index
+    const conditionTrialCounts = {};
+    
     return {
         type: jsPsychHtmlButtonResponse,
         stimulus: function() {
@@ -473,13 +498,14 @@ function createTestTrial(trialType, trialIndex, squareOrder) {
         margin_vertical: "80px",
         margin_horizontal: "40px",
         data: {
-            trial_index: trialIndex,
+            trial_index: trialIndex,  // 1) Trial number (whole experiment)
             task: 'test',
             square_order: squareOrder,
             trial_type_id: trialType.id,
             rewarding_option: trialType.rewardingOption,
             reward_probability: trialType.probability,
-            phase: 'test'
+            phase: 'test',
+            block_type: 'test'  // 16) Block type
         },
         on_start: function(trial) {
             // Add event listeners after the trial renders
@@ -510,13 +536,31 @@ function createTestTrial(trialType, trialIndex, squareOrder) {
         },
         on_finish: function(data) {
             const chosenOption = data.response;
+            const unchosenOption = chosenOption === 0 ? 1 : 0;
             const reward = getReward(chosenOption, trialType);
             settings.totalReward += reward;  // Still accumulate rewards, just don't show them
             
-            // Store these for analysis
-            data.chosen_option = chosenOption;
-            data.reward = reward;
-            data.total_reward = settings.totalReward;
+            // Get condition-specific trial index
+            if (!conditionTrialCounts[trialType.id]) {
+                conditionTrialCounts[trialType.id] = 0;
+            }
+            const conditionTrialIndex = conditionTrialCounts[trialType.id]++;
+            
+            // Store all required data fields
+            data.chosen_option = chosenOption;                       // 8) Chosen square ID
+            data.unchosen_option = unchosenOption;                   // 9) Unchosen square ID
+            data.condition_trial_index = conditionTrialIndex;        // 2) Trial number for this condition
+            data.chosen_color = settings.option_colors[squareOrder[data.response]]; // 3) Color of chosen square
+            data.unchosen_color = settings.option_colors[squareOrder[unchosenOption]]; // 4) Color of unchosen square
+            data.pair_id = settings.option_colors.join('-');         // 5) Pair ID
+            data.chosen_reward_probability = trialType.rewardingOption === chosenOption ? trialType.probability : 0; // 6) Reward probs of chosen
+            data.unchosen_reward_probability = trialType.rewardingOption === unchosenOption ? trialType.probability : 0; // 7) Reward probs of unchosen
+            data.chosen_reward_points = trialType.rewardingOption === chosenOption ? trialType.reward : 0; // 10) Reward points of chosen
+            data.unchosen_reward_points = trialType.rewardingOption === unchosenOption ? trialType.reward : 0; // 11) Reward points of unchosen
+            data.reward = reward;                                    // 12) Actual reward obtained
+            data.total_reward = settings.totalReward;                // 13) Cumulative reward
+            data.accuracy = chosenOption === trialType.rewardingOption ? 1 : 0; // 14) Accuracy
+            // 15) Response time (rt) is already stored by jsPsych
             
             // Store color information
             data.color_left = settings.option_colors[squareOrder[0]];
