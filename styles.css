@@ -75,7 +75,7 @@ body {
     height: 0;
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
-    border-bottom: 35px solid #999;
+    border-bottom: 35px solid #e74c3c;  /* Changed from #999 to #e74c3c (red) */
     position: absolute;
     top: -25px;
     left: 50%;
