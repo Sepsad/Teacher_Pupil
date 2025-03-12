@@ -1,5 +1,18 @@
 /* Experiment parameters */
 const settings = {
+    // Block structure configuration
+    blocks: {
+        learning: {
+            count: 2,           // Number of learning blocks
+            trialsPerBlock: 20, // Trials per learning block
+            showBlockBreaks: true // Show break between blocks
+        },
+        test: {
+            count: 1,           // Number of test blocks
+            trialsPerBlock: 30, // Trials per test block (should be divisible by 3 for equal distribution)
+            showBlockBreaks: true
+        }
+    },
     nb_trials: 30, // Change this value to adjust the total number of trials
     // Define multiple color pairs for the squares
     colorPairs: [
@@ -15,6 +28,7 @@ const settings = {
     option_colors: [], // Will be set randomly on initialization
     instruction_colors: ["#2ecc71", "#9b59b6"], // Green and Purple for instructions
     totalReward: 0,
+    currentBlock: 0,  // Track the current block number
     // Trial types configuration with proportions instead of absolute counts
     trialTypes: [
         {
@@ -22,14 +36,16 @@ const settings = {
             proportion: 0.5,  // 50% of trials
             frameClass: '',
             rewardingOption: 1, // 1 is the second color in the pair
-            reward: 10          // Fixed reward value
+            reward: 10,         // Fixed reward value
+            probability: 1.0    // 100% chance of reward (deterministic)
         },
         {
             id: 'hatched',    // Hatched background, blue rewarding
             proportion: 0.33, // ~33% of trials
             frameClass: 'hatched',
             rewardingOption: 0, // 0 is the first color in the pair
-            reward: 10          // Fixed reward value
+            reward: 10,         // Fixed reward value
+            probability: 1.0    // 100% chance of reward (deterministic)
         },
         {
             id: 'triangle',   // Hatched with triangle, red rewarding
@@ -37,7 +53,8 @@ const settings = {
             frameClass: 'hatched',
             hasTriangle: true,
             rewardingOption: 1, // 1 is the second color in the pair
-            reward: 10          // Fixed reward value
+            reward: 10,         // Fixed reward value
+            probability: 1.0    // 100% chance of reward (deterministic)
         }
     ]
 };
@@ -71,6 +88,23 @@ function selectRandomColorPair() {
     console.log("Selected color pair:", settings.option_colors);
 }
 
+// Calculate total trials across all learning blocks
+function calculateTotalLearningTrials() {
+    return settings.blocks.learning.count * settings.blocks.learning.trialsPerBlock;
+}
+
+// Initialize block-specific settings
+function initializeBlockSettings() {
+    // Store total learning trials for reference
+    settings.totalLearningTrials = calculateTotalLearningTrials();
+    
+    // Calculate trial counts for each trial type (per block)
+    calculateTrialCounts();
+    
+    console.log(`Experiment configured with ${settings.blocks.learning.count} learning blocks of ${settings.blocks.learning.trialsPerBlock} trials each`);
+    console.log(`Test phase has ${settings.blocks.test.count} blocks of ${settings.blocks.test.trialsPerBlock} trials each`);
+}
+
 // Call initialization functions
-calculateTrialCounts();
 selectRandomColorPair();
+initializeBlockSettings();

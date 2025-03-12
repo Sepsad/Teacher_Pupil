@@ -2,8 +2,14 @@
 
 // Get reward based on chosen option and trial type
 function getReward(option, trialType) {
+    // If the chosen option is the rewarding one
     if (option === trialType.rewardingOption) {
-        return trialType.reward;
+        // Apply probability - generate random number between 0 and 1
+        const randomValue = Math.random();
+        // If random number is less than probability, give reward
+        if (randomValue < trialType.probability) {
+            return trialType.reward;
+        }
     }
     return 0;
 }
@@ -39,13 +45,15 @@ function createTrialHTML(trialType, squareOrder, trialIndex, showReward = false,
     const triangleHTML = trialType.hasTriangle ? '<div class="triangle-indicator"></div>' : '';
     
     // Create HTML with a background frame containing both squares
-    let html = `
-        <div class="total-display">Total Points: ${settings.totalReward}</div>
-        <div class="trial-info">
-            <h2>Trial ${trialIndex + 1} of ${settings.nb_trials}</h2>
-            <p>${showReward ? 'Your result:' : 'Choose a square:'}</p>
-        </div>
-        <div class="squares-frame ${trialType.frameClass}">
+    let html = 
+    // `
+    //     <div class="total-display">Total Points: ${settings.totalReward}</div>
+    //     <div class="trial-info">
+    //         <h2>Trial ${trialIndex + 1} of ${settings.nb_trials}</h2>
+    //         <p>${showReward ? 'Your result:' : 'Choose a square:'}</p>
+    //     </div>` +
+        
+       ` <div class="squares-frame ${trialType.frameClass}">
             ${triangleHTML}
             <div class="option-container">`;
     

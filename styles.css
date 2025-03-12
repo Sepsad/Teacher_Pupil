@@ -75,9 +75,9 @@ body {
     height: 0;
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
-    border-bottom: 35px solid #999;
+    border-bottom: 35px solid #e74c3c;  /* Red triangle */
     position: absolute;
-    top: -25px;
+    top: 10px;  /* Changed from -25px to position inside the frame */
     left: 50%;
     transform: translateX(-50%);
 }
