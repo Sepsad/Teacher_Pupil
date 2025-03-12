@@ -22,14 +22,16 @@ const settings = {
             proportion: 0.5,  // 50% of trials
             frameClass: '',
             rewardingOption: 1, // 1 is the second color in the pair
-            reward: 10          // Fixed reward value
+            reward: 10,         // Fixed reward value
+            probability: 1.0    // 100% chance of reward (deterministic)
         },
         {
             id: 'hatched',    // Hatched background, blue rewarding
             proportion: 0.33, // ~33% of trials
             frameClass: 'hatched',
             rewardingOption: 0, // 0 is the first color in the pair
-            reward: 10          // Fixed reward value
+            reward: 10,         // Fixed reward value
+            probability: 1.0    // 100% chance of reward (deterministic)
         },
         {
             id: 'triangle',   // Hatched with triangle, red rewarding
@@ -37,7 +39,8 @@ const settings = {
             frameClass: 'hatched',
             hasTriangle: true,
             rewardingOption: 1, // 1 is the second color in the pair
-            reward: 10          // Fixed reward value
+            reward: 10,         // Fixed reward value
+            probability: 1.0    // 100% chance of reward (deterministic)
         }
     ]
 };

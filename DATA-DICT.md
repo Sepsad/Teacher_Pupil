@@ -13,6 +13,8 @@ This document explains each data field recorded during the experiment for proper
 | `rt` | Float | Response time in milliseconds |
 | `trial_type_id` | String | The condition ID ('plain', 'hatched', 'triangle') |
 | `square_order` | Array | Order of squares presented [0,1] or [1,0] |
+| `rewarding_option` | Integer | The option that gives reward (0 or 1) |
+| `reward_probability` | Float | Probability (0-1) that the rewarding option gives reward |
 
 ### Choice Trial Fields
 

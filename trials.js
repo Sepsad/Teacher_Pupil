@@ -358,7 +358,8 @@ function createChoiceTrial(trialType, trialIndex, squareOrder) {
             task: 'choice',
             square_order: squareOrder,
             trial_type_id: trialType.id,
-            rewarding_option: trialType.rewardingOption
+            rewarding_option: trialType.rewardingOption,
+            reward_probability: trialType.probability
         },
         on_start: function(trial) {
             // Add event listeners after the trial renders
@@ -387,6 +388,14 @@ function createChoiceTrial(trialType, trialIndex, squareOrder) {
             data.chosen_option = chosenOption;
             data.reward = reward;
             data.total_reward = settings.totalReward;
+            
+            // Store color information
+            data.color_left = settings.option_colors[squareOrder[0]];
+            data.color_right = settings.option_colors[squareOrder[1]];
+            data.color_mapping = {
+                0: settings.option_colors[0],
+                1: settings.option_colors[1]
+            };
         }
     };
 }
@@ -470,7 +479,9 @@ function createTestTrial(trialType, trialIndex, squareOrder) {
             task: 'test',
             square_order: squareOrder,
             trial_type_id: trialType.id,
-            rewarding_option: trialType.rewardingOption
+            rewarding_option: trialType.rewardingOption,
+            reward_probability: trialType.probability,
+            phase: 'test'
         },
         on_start: function(trial) {
             // Add event listeners after the trial renders
@@ -508,6 +519,14 @@ function createTestTrial(trialType, trialIndex, squareOrder) {
             data.chosen_option = chosenOption;
             data.reward = reward;
             data.total_reward = settings.totalReward;
+            
+            // Store color information
+            data.color_left = settings.option_colors[squareOrder[0]];
+            data.color_right = settings.option_colors[squareOrder[1]];
+            data.color_mapping = {
+                0: settings.option_colors[0],
+                1: settings.option_colors[1]
+            };
         }
     };
 }

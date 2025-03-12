@@ -2,8 +2,14 @@
 
 // Get reward based on chosen option and trial type
 function getReward(option, trialType) {
+    // If the chosen option is the rewarding one
     if (option === trialType.rewardingOption) {
-        return trialType.reward;
+        // Apply probability - generate random number between 0 and 1
+        const randomValue = Math.random();
+        // If random number is less than probability, give reward
+        if (randomValue < trialType.probability) {
+            return trialType.reward;
+        }
     }
     return 0;
 }
