@@ -45,13 +45,15 @@ function createTrialHTML(trialType, squareOrder, trialIndex, showReward = false,
     const triangleHTML = trialType.hasTriangle ? '<div class="triangle-indicator"></div>' : '';
     
     // Create HTML with a background frame containing both squares
-    let html = `
-        <div class="total-display">Total Points: ${settings.totalReward}</div>
-        <div class="trial-info">
-            <h2>Trial ${trialIndex + 1} of ${settings.nb_trials}</h2>
-            <p>${showReward ? 'Your result:' : 'Choose a square:'}</p>
-        </div>
-        <div class="squares-frame ${trialType.frameClass}">
+    let html = 
+    // `
+    //     <div class="total-display">Total Points: ${settings.totalReward}</div>
+    //     <div class="trial-info">
+    //         <h2>Trial ${trialIndex + 1} of ${settings.nb_trials}</h2>
+    //         <p>${showReward ? 'Your result:' : 'Choose a square:'}</p>
+    //     </div>` +
+        
+       ` <div class="squares-frame ${trialType.frameClass}">
             ${triangleHTML}
             <div class="option-container">`;
     
