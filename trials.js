@@ -6,14 +6,14 @@ const taskInstructions = {
     pages: [
         `<div class="instructions">
             <h2>Welcome!</h2>
-            <p>Thank you for choosing to take part in this study. We're happy to have you!</p>
-            <p>With your help, we will try to understand a bit better how people learn new things and make decisions.</p>
+            <p>Thank you for participating in this study. We're happy to have you!</p>
+            <p>With your help, we will try to understand how people learn new things and make decisions.</p>
             <p>Let's jump right into it!</p>
         </div>`,
         `<div class="instructions">
             <h2>Task Instructions</h2>
-            <p>This experiment is a point-and-click game where you will select one of two squares displayed on the screen. Your goal is to identify the square that offers a higher reward.</p>
-            <p>For example, here is what these squares might look like:</p>
+            <p>This is a point-and-click game where you will select one of two squares displayed on the screen. Your goal is to find the squares that will make you win the most points</p>
+            <p>Here is an example of what the squares may look like:</p>
             <div class="option-container" style="margin: 30px 0">
                 <div class="option-wrapper">
                     <div class="square-option square-green" style="background-color: ${settings.instruction_colors[0]} !important;"></div>
@@ -23,9 +23,9 @@ const taskInstructions = {
                 </div>
 
             </div>
-            <p>When you click, each square may give you winning points or nothing.</p>
-            <p>When you are choosing between the squares, keep in mind that one of the symbols will be overall better than others at winning you points.</p>
-            <p><strong>Note:</strong> The squares in the actual task will have different colors than shown here.</p>
+
+            <p>When you click on a square to select it, you will obtain the amount of points associated to it. Keep in mind that the squares come in pairs,  and one of the squares will always be better than the other  at winning you points.</p>
+            <p><strong>Note:</strong> The squares in the actual task will be different from the ones in this example.</p>
         </div>`,
         `<div class="instructions">
             <h2>Example</h2>
@@ -71,19 +71,19 @@ const teachingInstructions = {
         
         `<div class="instructions">
             <h2>Instructions: Teaching</h2>
-            <p>You should try to transmit to them any strategy you may have devised while you were doing the task. Your goal is to teach them how to gain as many points as possible.</p>
-            <p>Keep in mind that the games they'll play will be exactly like yours, with the same rules that define the value of squares.</p>
+            <p>You should try to transmit to future players any strategy you may have devised while you were doing the task. Your goal is to teach them how to gain as many points as possible.</p>
+            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same squares</p>
             <p>Note that the participants learning from you will be seeing the same squares. Focus on conveying the right strategy rather than talking about one square in particular.</p>
             <p><strong>Think of yourself as the teacher!</strong> Try to help your future student as much as you can!</p>
-            <p>For reference, research shows a good teaching text is at least 250 characters long.</p>
+            <p>For reference, a good teaching text should be at least 250 characters long</p>
         </div>`,
         
         `<div class="instructions">
             <h2>Instructions: Teaching</h2>
             <p>At the end of the study, we will convert all collected points into pounds and add them to the fixed bonus provided by Prolific.</p>
             <p>The conversion rate is 1 point = 1.2 pence.</p>
-            <p>But since you will be a teacher, your bonus earnings will not depend on the points you earn but rather on the points your pupil earns.</p>
-            <p>It is therefore in your best interest that you explain the task in the best possible way. If your pupil is good, you could double your earnings!</p>
+            <p> <strong> But since you will be a teacher </strong>, your bonus earnings will not depend on the points you earn but rather on the points your pupil earns.</p>
+            <p>It is therefore in your best interest to explain the task in the best possible way. If your pupil is good enough you could double your earnings!</p>
         </div>`
     ],
     show_clickable_nav: true
@@ -106,7 +106,7 @@ const quizQuestions = {
             </div>
             
             <div class="quiz-question">
-                <p>2. You will see the outcome of the square you clicked on, but not the outcome of the square you did not click on.</p>
+                <p>2. You will see how many points you obtain from the square you clicked on. You will not see the points of the option you did not pick.</p>
                 <div class="quiz-options">
                     <label><input type="radio" name="q2" value="true"> True</label>
                     <label><input type="radio" name="q2" value="false"> False</label>
@@ -200,7 +200,7 @@ const quizPassCongratulation = {
         <div class="instructions">
             <h2>Fantastic!</h2>
             <p>You have passed the quiz successfully and understand the main task.</p>
-            <p>Before we begin, you need to learn about your role as a teacher in this experiment.</p>
+            <p>Before we begin, we will tell you about your role as a teacher in this game.</p>
         </div>
     `,
     choices: ["Continue to Teaching Instructions"]
@@ -275,7 +275,7 @@ const teachingQuizQuestions = {
         
         // Check if answers are correct
         const correctAnswers = {
-            q1: "true",
+            q1: "false",
             q2: "true", 
             q3: "true"
         };
@@ -295,8 +295,8 @@ const teachingQuizCheck = {
         type: jsPsychHtmlButtonResponse,
         stimulus: `
             <div class="instructions">
-                <h2>Teaching Quiz Results</h2>
-                <p>You did not pass the teaching quiz. Please review the instructions again.</p>
+                <h2>You did not pass the teaching quiz.</h2>
+                <h4> Please review the instructions again.</h4>
                 <p>Pay careful attention to how the teaching component works and your role as a teacher.</p>
             </div>
         `,
@@ -317,10 +317,10 @@ const teachingQuizPassCongratulation = {
         <div class="instructions">
             <h2>Great Job!</h2>
             <p>You have passed the teaching quiz successfully and understand your role as a teacher.</p>
-            <p>You are now ready to begin the experiment.</p>
+            <p>You are now ready to begin the game.</p>
         </div>
     `,
-    choices: ["Begin Experiment"]
+    choices: ["Begin Game"]
 };
 
 // Create final screen
@@ -331,7 +331,6 @@ function createFinalScreen() {
             return `
                 <div class="instructions">
                     <h2>Task Complete!</h2>
-                    <p>You earned a total of ${settings.totalReward} points.</p>
                     <p>Thank you for participating.</p>
                 </div>
             `;
@@ -453,11 +452,10 @@ const testBlockInstructions = {
     type: jsPsychHtmlButtonResponse,
     stimulus: `
         <div class="instructions">
-            <h2>Test Block</h2>
-            <p>Great job! You have completed the learning phase.</p>
-            <p>Now we will test what you have learned. You will see the same types of trials, but you will <strong>not receive feedback</strong> after your choices.</p>
-            <p>This test consists of 30 trials. Try to apply what you learned to maximize your points!</p>
-            <p>Your points will still be counted toward your final score, even though you won't see them immediately.</p>
+            <h2>First Part</h2>
+            <p>Great job! You have completed the first part.</p>
+            <p>We will now play Part 2 of the game. The game will remain the same as what you have seen before: everything you have learned about strategy and the point value of each square is still valid.</p>
+            <p>The only difference is that now you will not see how many point you actually obtained after clicking on a square.</p>
         </div>
     `,
     choices: ["Start Test Block"]
@@ -579,7 +577,7 @@ const teachingIntro = {
     stimulus: `
         <div class="instructions">
             <h2>Teaching Phase</h2>
-            <p>Thank you for going over the game. Now, the time has come for you to transfer your strategies to your future pupil.</p>
+            <p>Thank you for going over the game. Now, the time has come for you to explain the game to your pupil, as clear as possible.</p>
         </div>
     `,
     choices: ["Continue"]
@@ -592,7 +590,7 @@ const teachingDetails = {
         <div class="instructions">
             <h2>Teaching Instructions</h2>
             <p>Remember, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
-            <p>Also important, the options they will have to choose from will have the same value as yours, but they will be represented by different symbols, so focus on the concepts and strategies rather than one concrete symbol's shape or color since they won't be the same anyway.</p>
+            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same squares.</p>
             <p>You really want your pupil to succeed! After all, remember your extra bonus depends on their performance.</p>
             <p>Also remember that a good teaching text is at least 250 characters, but of course you can extend yourself as much as you want. Don't hesitate to share tips, strategies, or any other piece of information that you think will help your pupil.</p>
         </div>
@@ -662,8 +660,8 @@ function createBlockBreakScreen(phase, blockNumber, totalBlocks) {
         type: jsPsychHtmlButtonResponse,
         stimulus: `
             <div class="instructions">
-                <h2>${phase === 'learning' ? 'Learning' : 'Test'} Block ${blockNumber + 1} of ${totalBlocks} Complete</h2>
-                <p>You've completed block ${blockNumber + 1} of ${totalBlocks}.</p>
+                <h2> Block ${blockNumber + 1} out of ${totalBlocks}</h2>
+                <p>You've completed block ${blockNumber + 1} out of ${totalBlocks}.</p>
 
                 <p>Take a short break if you need to. Click the button below when you're ready to continue.</p>
             </div>
@@ -791,9 +789,9 @@ function buildTimeline() {
                 type: jsPsychHtmlButtonResponse,
                 stimulus: `
                     <div class="instructions">
-                        <h2>Learning Block ${blockIdx + 1}</h2>
-                        <p>You are about to start learning block ${blockIdx + 1} of ${settings.blocks.learning.count}.</p>
-                        <p>Remember, your goal is to identify which squares offer higher rewards in different contexts.</p>
+                        <h2> Block ${blockIdx + 1}</h2>
+                        <p>You are about to start block ${blockIdx + 1} of ${settings.blocks.learning.count}.</p>
+                        <p>Remember, Your goal is to find the squares that will make you win the most points.</p>
                     </div>
                 `,
                 choices: ["Begin Block"],
