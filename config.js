@@ -3,14 +3,14 @@ const settings = {
     // Block structure configuration
     blocks: {
         learning: {
-            count: 2,           // Number of learning blocks
-            trialsPerBlock: 20, // Trials per learning block
+            count: 3,           // Number of learning blocks
+            trialsPerBlock: 6, // Trials per learning block (should be divisible by 3)
             showBlockBreaks: true // Show break between blocks
         },
         test: {
             count: 1,           // Number of test blocks
             trialsPerBlock: 30, // Trials per test block (should be divisible by 3 for equal distribution)
-            showBlockBreaks: true
+            showBlockBreaks: true // Show break between blocks
         }
     },
     nb_trials: 30, // Change this value to adjust the total number of trials
