@@ -12,7 +12,7 @@ const taskInstructions = {
         </div>`,
         `<div class="instructions">
             <h2>Task Instructions</h2>
-            <p>This experiment is a point-and-click game where you will select one of two squares displayed on the screen. Your goal is to find the squares that will make you win the most points</p>
+            <p>This is a point-and-click game where you will select one of two squares displayed on the screen. Your goal is to find the squares that will make you win the most points</p>
             <p>Here is an example of what the squares may look like:</p>
             <div class="option-container" style="margin: 30px 0">
                 <div class="option-wrapper">
@@ -317,10 +317,10 @@ const teachingQuizPassCongratulation = {
         <div class="instructions">
             <h2>Great Job!</h2>
             <p>You have passed the teaching quiz successfully and understand your role as a teacher.</p>
-            <p>You are now ready to begin the experiment.</p>
+            <p>You are now ready to begin the game.</p>
         </div>
     `,
-    choices: ["Begin Experiment"]
+    choices: ["Begin Game"]
 };
 
 // Create final screen
@@ -331,7 +331,6 @@ function createFinalScreen() {
             return `
                 <div class="instructions">
                     <h2>Task Complete!</h2>
-                    <p>You earned a total of ${settings.totalReward} points.</p>
                     <p>Thank you for participating.</p>
                 </div>
             `;
@@ -591,7 +590,7 @@ const teachingDetails = {
         <div class="instructions">
             <h2>Teaching Instructions</h2>
             <p>Remember, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
-            <p>Also important, the options they will have to choose from will have the same value as yours, but they will be represented by different symbols, so focus on the concepts and strategies rather than one concrete symbol's shape or color since they won't be the same anyway.</p>
+            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same squares.</p>
             <p>You really want your pupil to succeed! After all, remember your extra bonus depends on their performance.</p>
             <p>Also remember that a good teaching text is at least 250 characters, but of course you can extend yourself as much as you want. Don't hesitate to share tips, strategies, or any other piece of information that you think will help your pupil.</p>
         </div>
