@@ -22,12 +22,16 @@ This project uses:
 ## File Structure
 
 - `index.html` - Main HTML file
-- `styles.css` - CSS styling
+- `styles.css` - CSS styling for the experiment interface
 - `config.js` - Experiment configuration settings
-- `utils.js` - Helper functions
+- `utils.js` - Helper functions for trial sequence generation and reward calculations
 - `trials.js` - Trial definitions and timeline construction
 - `main.js` - Experiment initialization
+- `DATA-DICT.md` - Data dictionary explaining all recorded experiment fields
+- `README.md` - This documentation file
+- `.gitignore` - Git ignore configuration
 - `images/` - Contains visual assets (like instruction.gif)
+- `dist/` - jsPsych distribution files
 
 ## Running Locally
 
