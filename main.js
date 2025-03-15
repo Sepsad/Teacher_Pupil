@@ -4,6 +4,7 @@
 const jsPsych = initJsPsych({
     on_finish: function() {
         jsPsych.data.displayData();
+        jsPsych.data.get().localSave('csv', 'data.csv');
     },
     display_element: 'jspsych-target' // Explicitly set the display element
 });
