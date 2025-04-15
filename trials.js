@@ -39,7 +39,7 @@ const taskInstructions = {
         </div>`,
         `<div class="instructions">
             <h2>READ CAREFULLY!</h2>
-            <p>The value of the squares may change depending on features external to the squares. In the example below, the square has lost its value because the blue dot is positioned next to it.</p>
+            <p>The value of the squares may change depending on features external to the squares. </p>
             <div class="squares-frame" style="margin: 30px auto; position: relative">
                 <div style="width: 20px; height: 20px; background: blue; border-radius: 80%; position: absolute; left: 20px; top: 50%; transform: translateY(-50%)"></div>
                 <div class="option-container">
@@ -73,7 +73,6 @@ const teachingInstructions = {
             <h2>Instructions: Teaching</h2>
             <p>You should try to transmit to future players any strategy you may have devised while you were doing the task. Your goal is to teach them how to gain as many points as possible.</p>
             <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same squares</p>
-            <p>Note that the participants learning from you will be seeing the same squares. Focus on conveying the right strategy rather than talking about one square in particular.</p>
             <p><strong>Think of yourself as the teacher!</strong> Try to help your future student as much as you can!</p>
             <p>For reference, a good teaching text should be at least 250 characters long</p>
         </div>`,
@@ -590,7 +589,7 @@ const teachingDetails = {
         <div class="instructions">
             <h2>Teaching Instructions</h2>
             <p>Remember, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
-            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same squares.</p>
+            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same images.</p>
             <p>You really want your pupil to succeed! After all, remember your extra bonus depends on their performance.</p>
             <p>Also remember that a good teaching text is at least 250 characters, but of course you can extend yourself as much as you want. Don't hesitate to share tips, strategies, or any other piece of information that you think will help your pupil.</p>
         </div>
