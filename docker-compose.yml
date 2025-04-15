@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  database:
+    image: mysql:8.0
+    container_name: teacher_pupil_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - teacher_pupil_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: teacher_pupil_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 300M
+
+    ports:
+      - "8080:80"
+    depends_on:
+      - database
+    networks:
+      - teacher_pupil_network
+
+  webserver:
+    image: php:8.0-apache
+    container_name: teacher_pupil_webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - database
+    networks:
+      - teacher_pupil_network
+    command: >
+      bash -c "apt-get update && apt-get install -y libpng-dev zlib1g-dev libzip-dev unzip && 
+      docker-php-ext-install mysqli pdo_mysql zip && 
+      a2enmod rewrite && 
+      apache2-foreground"
+
+networks:
+  teacher_pupil_network:
+    driver: bridge
+
+volumes:
+  db_data:

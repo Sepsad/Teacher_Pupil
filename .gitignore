@@ -13,5 +13,5 @@ resources/sass/.sass-cache/
 resources/.arch-internal-preview.css
 .arch-internal-preview.css
 .env
-docker-compose.yml
+# docker-compose.yml
 .DS_Store
