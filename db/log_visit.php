@@ -24,34 +24,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Invalid JSON data');
         }
         
-        // Extract participant ID and browser info
-        $participant_id = isset($data['participant_id']) ? mysqli_real_escape_string($conn, $data['participant_id']) : '';
+        // Extract prolific ID and browser info
+        $prolific_id = isset($data['prolific_id']) ? mysqli_real_escape_string($conn, $data['prolific_id']) : '';
         $browser_info = isset($data['browser_info']) ? mysqli_real_escape_string($conn, json_encode($data['browser_info'])) : '';
         
-        if (empty($participant_id)) {
-            throw new Exception('Missing required participant ID');
+        if (empty($prolific_id)) {
+            throw new Exception('Missing required prolific ID');
         }
         
-        // Check if this participant ID already exists
-        $check_sql = "SELECT id FROM participants WHERE participant_id = ?";
+        // Check if this prolific ID already exists
+        $check_sql = "SELECT id FROM participants WHERE prolific_id = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
-        mysqli_stmt_bind_param($check_stmt, "s", $participant_id);
+        mysqli_stmt_bind_param($check_stmt, "s", $prolific_id);
         mysqli_stmt_execute($check_stmt);
         mysqli_stmt_store_result($check_stmt);
         
         if (mysqli_stmt_num_rows($check_stmt) > 0) {
             // Participant exists, update their status if they're returning
-            $update_sql = "UPDATE participants SET status = 'started' WHERE participant_id = ? AND status = 'abandoned'";
+            $update_sql = "UPDATE participants SET status = 'started' WHERE prolific_id = ? AND status = 'abandoned'";
             $update_stmt = mysqli_prepare($conn, $update_sql);
-            mysqli_stmt_bind_param($update_stmt, "s", $participant_id);
+            mysqli_stmt_bind_param($update_stmt, "s", $prolific_id);
             mysqli_stmt_execute($update_stmt);
             
             echo json_encode(['success' => true, 'message' => 'Returning participant logged']);
         } else {
             // New participant, insert into database
-            $sql = "INSERT INTO participants (participant_id, first_visit_time, status, browser_info) VALUES (?, NOW(), 'started', ?)";
+            $sql = "INSERT INTO participants (prolific_id, first_visit_time, status, browser_info) VALUES (?, NOW(), 'started', ?)";
             $stmt = mysqli_prepare($conn, $sql);
-            mysqli_stmt_bind_param($stmt, "ss", $participant_id, $browser_info);
+            mysqli_stmt_bind_param($stmt, "ss", $prolific_id, $browser_info);
             
             if (mysqli_stmt_execute($stmt)) {
                 echo json_encode(['success' => true, 'message' => 'Visit logged successfully']);

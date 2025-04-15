@@ -5,13 +5,13 @@ USE teacher_pupil_db;
 -- Create participants table with status tracking
 CREATE TABLE IF NOT EXISTS participants (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    participant_id VARCHAR(255) NOT NULL,
+    prolific_id VARCHAR(255) NOT NULL,
     first_visit_time DATETIME NOT NULL,
     date_completed DATETIME NULL,
     status ENUM('started', 'completed', 'abandoned') DEFAULT 'started',
     total_score INT DEFAULT 0,
     browser_info TEXT,
-    UNIQUE KEY (participant_id)
+    UNIQUE KEY (prolific_id)
 );
 
 -- Updated trials table with all the required columns
@@ -102,20 +102,20 @@ CREATE TABLE IF NOT EXISTS experiment_data (
 );
 
 -- Create a view for easy retrieval of aggregate data
-CREATE VIEW participant_performance AS
-SELECT 
-    p.participant_id,
-    p.date_completed,
-    COUNT(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN 1 END) as total_trials,
-    AVG(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.accuracy END) as avg_accuracy,
-    SUM(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.reward END) as total_reward,
-    tt.character_count as teaching_length,
-    tt.teaching_text
-FROM 
-    participants p
-LEFT JOIN 
-    trials t ON p.id = t.participant_id
-LEFT JOIN 
-    teaching_texts tt ON p.id = tt.participant_id
-GROUP BY 
-    p.id;
+-- CREATE VIEW participant_performance AS
+-- SELECT 
+--     p.prolific_id,
+--     p.date_completed,
+--     COUNT(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN 1 END) as total_trials,
+--     AVG(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.accuracy END) as avg_accuracy,
+--     SUM(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.reward END) as total_reward,
+--     tt.character_count as teaching_length,
+--     tt.teaching_text
+-- FROM 
+--     participants p
+-- LEFT JOIN 
+--     trials t ON p.id = t.participant_id
+-- LEFT JOIN 
+--     teaching_texts tt ON p.id = tt.participant_id
+-- GROUP BY 
+--     p.id;

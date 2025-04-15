@@ -7,22 +7,22 @@ const jsPsych = initJsPsych({
         // Get all experiment data as JSON instead of CSV
         const experimentData = jsPsych.data.get().json();
         
-        // Generate a unique participant ID (or use one provided via URL parameters)
+        // Generate a unique prolific ID (or use one provided via URL parameters)
         const urlParams = new URLSearchParams(window.location.search);
-        const participantId = urlParams.get('participant_id') || generateParticipantId();
+        const prolificId = urlParams.get('prolific_id') || generateProlificId();
         
         // Send data to server
-        saveDataToServer(participantId, experimentData);
+        saveDataToServer(prolificId, experimentData);
         
         // Display data in browser for debugging
         // jsPsych.data.displayData();
         
-        // Show completion message with participant ID for reference
+        // Show completion message with prolific ID for reference
         document.getElementById('jspsych-target').innerHTML += `
             <div style="text-align: center; margin-top: 10px; padding: 10px; background-color: #f0f0f0;">
                 <h2>Data Submission</h2>
                 <p>Saving data to the remote database... Please wait.</p>
-                <p>Your participant ID is: <strong>${participantId}</strong></p>
+                <p>Your prolific ID is: <strong>${prolificId}</strong></p>
                 <p>Please make a note of this ID in case you need to reference it later.</p>
             </div>
         `;
@@ -30,9 +30,9 @@ const jsPsych = initJsPsych({
     display_element: 'jspsych-target' // Explicitly set the display element
 });
 
-// Function to generate a simple participant ID if one isn't provided
-function generateParticipantId() {
-    return 'participant_' + Date.now();
+// Function to generate a simple prolific ID if one isn't provided
+function generateProlificId() {
+    return 'prolific_' + Date.now();
 }
 
 // Function to get browser information
@@ -50,9 +50,9 @@ function getBrowserInfo() {
 }
 
 // Function to log the initial visit
-function logVisit(participantId) {
+function logVisit(prolificId) {
     const visitData = {
-        participant_id: participantId,
+        prolific_id: prolificId,
         browser_info: getBrowserInfo()
     };
     
@@ -82,13 +82,13 @@ function logVisit(participantId) {
 }
 
 // Function to save data to server
-function saveDataToServer(participantId, experimentData) {
+function saveDataToServer(prolificId, experimentData) {
     try {
-        console.log('Attempting to save JSON data to server for participant:', participantId);
+        console.log('Attempting to save JSON data to server for participant:', prolificId);
         
         // Create the data object to send
         const dataToSend = {
-            participant_id: participantId,
+            prolific_id: prolificId,
             experiment_data: experimentData, // JSON data as string
             browser_info: getBrowserInfo()
         };
@@ -145,7 +145,7 @@ function saveDataToServer(participantId, experimentData) {
             
             // Save data locally as backup
             localStorage.setItem('teacher_pupil_backup_data', JSON.stringify({
-                participant_id: participantId,
+                prolific_id: prolificId,
                 timestamp: new Date().toISOString(),
                 experiment_data: experimentData
             }));
@@ -176,31 +176,31 @@ function showErrorMessage(message) {
 
 // Run the experiment when the page loads
 window.onload = function() {
-    // Get participant ID from URL or generate a new one
+    // Get prolific ID from URL or generate a new one
     const urlParams = new URLSearchParams(window.location.search);
-    let participantId = urlParams.get('participant_id');
+    let prolificId = urlParams.get('prolific_id');
     
-    // Check if we have a stored participant ID
-    if (!participantId) {
-        participantId = localStorage.getItem('teacherPupilParticipantId');
+    // Check if we have a stored prolific ID
+    if (!prolificId) {
+        prolificId = localStorage.getItem('teacherPupilProlificId');
     }
     
-    // If still no participant ID, generate a new one
-    if (!participantId) {
-        participantId = generateParticipantId();
+    // If still no prolific ID, generate a new one
+    if (!prolificId) {
+        prolificId = generateProlificId();
         // Store in localStorage for session persistence
-        localStorage.setItem('teacherPupilParticipantId', participantId);
+        localStorage.setItem('teacherPupilProlificId', prolificId);
     }
     
-    // Update URL with participant ID without reloading page
-    if (!urlParams.has('participant_id')) {
+    // Update URL with prolific ID without reloading page
+    if (!urlParams.has('prolific_id')) {
         const newUrl = new URL(window.location);
-        newUrl.searchParams.set('participant_id', participantId);
+        newUrl.searchParams.set('prolific_id', prolificId);
         window.history.replaceState({}, '', newUrl);
     }
     
     // Log the visit
-    logVisit(participantId);
+    logVisit(prolificId);
     
     // Build the timeline
     const timeline = buildTimeline();

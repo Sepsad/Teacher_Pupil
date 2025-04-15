@@ -55,16 +55,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Invalid JSON data: ' . $json_error);
         }
         
-        // Extract participant ID and experiment data (now JSON string)
-        $participant_id = isset($data['participant_id']) ? mysqli_real_escape_string($conn, $data['participant_id']) : '';
+        // Extract prolific ID and experiment data (now JSON string)
+        $prolific_id = isset($data['prolific_id']) ? mysqli_real_escape_string($conn, $data['prolific_id']) : '';
         $experiment_data_json = isset($data['experiment_data']) ? $data['experiment_data'] : '';
         $browser_info = isset($data['browser_info']) ? mysqli_real_escape_string($conn, json_encode($data['browser_info'])) : '';
         
-        log_debug('Processing JSON data for participant: ' . $participant_id);
+        log_debug('Processing JSON data for participant: ' . $prolific_id);
         
-        if (empty($participant_id) || empty($experiment_data_json)) {
+        if (empty($prolific_id) || empty($experiment_data_json)) {
             throw new Exception('Missing required data: ' . 
-                                (empty($participant_id) ? 'participant_id ' : '') . 
+                                (empty($prolific_id) ? 'prolific_id ' : '') . 
                                 (empty($experiment_data_json) ? 'experiment_data' : ''));
         }
         
@@ -123,15 +123,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         log_debug('Starting transaction');
         mysqli_begin_transaction($conn);
         
-        // Check if this participant already exists
-        $check_sql = "SELECT id FROM participants WHERE participant_id = ?";
+        // Check if this prolific_id already exists
+        $check_sql = "SELECT id FROM participants WHERE prolific_id = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         
         if (!$check_stmt) {
             throw new Exception('Prepare statement failed: ' . mysqli_error($conn));
         }
         
-        mysqli_stmt_bind_param($check_stmt, "s", $participant_id);
+        mysqli_stmt_bind_param($check_stmt, "s", $prolific_id);
         
         if (!mysqli_stmt_execute($check_stmt)) {
             throw new Exception('Check participant query failed: ' . mysqli_stmt_error($check_stmt));
@@ -150,9 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                           status = 'completed', 
                           total_score = ?, 
                           browser_info = COALESCE(NULLIF(?, ''), browser_info)
-                          WHERE participant_id = ?";
+                          WHERE prolific_id = ?";
             $update_stmt = mysqli_prepare($conn, $update_sql);
-            mysqli_stmt_bind_param($update_stmt, "iss", $total_score, $browser_info, $participant_id);
+            mysqli_stmt_bind_param($update_stmt, "iss", $total_score, $browser_info, $prolific_id);
             
             if (!mysqli_stmt_execute($update_stmt)) {
                 throw new Exception('Error updating participant data: ' . mysqli_error($conn));
@@ -160,19 +160,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_close($update_stmt);
             
             // Get the participant_db_id for foreign key references
-            $id_sql = "SELECT id FROM participants WHERE participant_id = ?";
+            $id_sql = "SELECT id FROM participants WHERE prolific_id = ?";
             $id_stmt = mysqli_prepare($conn, $id_sql);
-            mysqli_stmt_bind_param($id_stmt, "s", $participant_id);
+            mysqli_stmt_bind_param($id_stmt, "s", $prolific_id);
             mysqli_stmt_execute($id_stmt);
             mysqli_stmt_bind_result($id_stmt, $participant_db_id);
             mysqli_stmt_fetch($id_stmt);
             mysqli_stmt_close($id_stmt);
         } else {
             // Insert new participant record
-            $insert_sql = "INSERT INTO participants (participant_id, first_visit_time, date_completed, status, total_score, browser_info) 
+            $insert_sql = "INSERT INTO participants (prolific_id, first_visit_time, date_completed, status, total_score, browser_info) 
                           VALUES (?, NOW(), NOW(), 'completed', ?, ?)";
             $insert_stmt = mysqli_prepare($conn, $insert_sql);
-            mysqli_stmt_bind_param($insert_stmt, "sis", $participant_id, $total_score, $browser_info);
+            mysqli_stmt_bind_param($insert_stmt, "sis", $prolific_id, $total_score, $browser_info);
             
             if (!mysqli_stmt_execute($insert_stmt)) {
                 throw new Exception('Error inserting participant data: ' . mysqli_error($conn));

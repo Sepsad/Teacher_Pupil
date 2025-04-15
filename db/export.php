@@ -78,7 +78,7 @@ try {
     switch ($type) {
         case 'csv':
             // Get all participants and their trial data
-            $sql = "SELECT p.participant_id, p.date_completed, t.trial_data 
+            $sql = "SELECT p.prolific_id, p.date_completed, t.trial_data 
                    FROM participants p 
                    JOIN trials t ON p.id = t.participant_id";
             $result = mysqli_query($conn, $sql);
@@ -90,7 +90,7 @@ try {
             $data = [];
             // Include all fields from DATA-DICT
             $headers = [
-                'participant_id', 'date_completed', 'trial_index', 'condition_trial_index', 
+                'prolific_id', 'date_completed', 'trial_index', 'condition_trial_index', 
                 'task', 'trial_type_id', 'block_type', 'square_order', 'pair_id',
                 'rewarding_option', 'reward_probability', 'response', 'chosen_option',
                 'unchosen_option', 'chosen_color', 'unchosen_color', 'chosen_reward_probability',
@@ -105,13 +105,13 @@ try {
                 
                 foreach ($flatTrials as $trial) {
                     $csvRow = [
-                        'participant_id' => $row['participant_id'],
+                        'prolific_id' => $row['prolific_id'],
                         'date_completed' => $row['date_completed']
                     ];
                     
                     // Add trial data fields
                     foreach ($headers as $header) {
-                        if ($header !== 'participant_id' && $header !== 'date_completed') {
+                        if ($header !== 'prolific_id' && $header !== 'date_completed') {
                             $csvRow[$header] = isset($trial[$header]) ? $trial[$header] : '';
                         }
                     }
@@ -125,7 +125,7 @@ try {
             
         case 'json':
             // Get all data as JSON
-            $sql = "SELECT p.participant_id, p.date_completed, t.trial_data 
+            $sql = "SELECT p.prolific_id, p.date_completed, t.trial_data 
                    FROM participants p 
                    JOIN trials t ON p.id = t.participant_id";
             $result = mysqli_query($conn, $sql);
@@ -138,7 +138,7 @@ try {
             
             while ($row = mysqli_fetch_assoc($result)) {
                 $data[] = [
-                    'participant_id' => $row['participant_id'],
+                    'prolific_id' => $row['prolific_id'],
                     'date_completed' => $row['date_completed'],
                     'trials' => json_decode($row['trial_data'], true)
                 ];
@@ -149,7 +149,7 @@ try {
             
         case 'teaching_only':
             // Get only teaching texts
-            $sql = "SELECT p.participant_id, p.date_completed, tt.teaching_text 
+            $sql = "SELECT p.prolific_id, p.date_completed, tt.teaching_text 
                    FROM participants p 
                    JOIN teaching_texts tt ON p.id = tt.participant_id";
             $result = mysqli_query($conn, $sql);
@@ -159,11 +159,11 @@ try {
             }
             
             $data = [];
-            $headers = ['participant_id', 'date_completed', 'teaching_text'];
+            $headers = ['prolific_id', 'date_completed', 'teaching_text'];
             
             while ($row = mysqli_fetch_assoc($result)) {
                 $data[] = [
-                    $row['participant_id'],
+                    $row['prolific_id'],
                     $row['date_completed'],
                     $row['teaching_text']
                 ];
