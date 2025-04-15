@@ -12,6 +12,7 @@ This document explains each data field recorded during the experiment for proper
 | `condition_trial_index` | Integer | Sequential index of the trial within a specific condition type |
 | `task` | String | Type of trial ('choice', 'feedback', 'test', 'teaching_text') |
 | `trial_type_id` | String | The condition ID ('plain', 'hatched', 'triangle') |
+| `trial_type` | String | JSPsych trial type (e.g., 'html-keyboard-response') |
 | `block_type` | String | Type of block ('learning', 'test') |
 | `square_order` | Array | Order of squares presented [0,1] or [1,0] |
 | `pair_id` | String | Unique identifier for the color pair shown (e.g., '#3498db-#e74c3c') |
@@ -19,6 +20,17 @@ This document explains each data field recorded during the experiment for proper
 | `reward_probability` | Float | Probability (0-1) that the rewarding option gives reward |
 | `rt` | Float | Response time in milliseconds |
 | `accuracy` | Integer | 1 if participant chose the rewarding option, 0 otherwise |
+| `success` | Boolean | Whether the trial executed successfully |
+| `timeout` | Boolean | Whether the participant timed out on this trial |
+| `failed_images` | Array | List of images that failed to load |
+| `failed_audio` | Array | List of audio files that failed to load |
+| `failed_video` | Array | List of video files that failed to load |
+| `time_elapsed` | Integer | Time elapsed since the start of the experiment (ms) |
+| `internal_node_id` | String | JSPsych internal identifier for the trial |
+| `view_history` | Array | History of viewing events during the trial |
+| `stimulus` | String | HTML content shown during the trial |
+| `phase` | String | Current phase of the experiment |
+| `total_reward` | Integer | Cumulative points earned up to this trial |
 
 ### Choice and Test Trial Fields
 
@@ -34,7 +46,6 @@ This document explains each data field recorded during the experiment for proper
 | `chosen_reward_points` | Integer | Maximum possible points from chosen option |
 | `unchosen_reward_points` | Integer | Maximum possible points from unchosen option |
 | `reward` | Integer | Points earned from the choice (typically 0 or 10) |
-| `total_reward` | Integer | Cumulative points earned up to this trial |
 | `color_left` | String | Color of the left square |
 | `color_right` | String | Color of the right square |
 | `color_mapping` | Object | Mapping of option indices to colors |
@@ -47,6 +58,7 @@ This document explains each data field recorded during the experiment for proper
 | `passed_quiz` | Boolean | Whether participant passed the task quiz |
 | `tq1`, `tq2`, `tq3` | String | Answers to teaching quiz questions ('true' or 'false') |
 | `passed_teaching_quiz` | Boolean | Whether participant passed the teaching quiz |
+| `answers` | Object | Compiled answers to quiz questions |
 
 ### Teaching Data
 
