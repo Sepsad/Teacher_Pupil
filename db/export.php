@@ -3,10 +3,10 @@
 require_once 'config.php';
 
 // Basic security check - remove in production or replace with proper authentication
-$allowed_ips = ['127.0.0.1', '::1']; // localhost IPs
-if (!in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
-    die("Access denied");
-}
+// $allowed_ips = ['127.0.0.1', '::1']; // localhost IPs
+// if (!in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
+//     die("Access denied");
+// }
 
 // Define export type from URL parameter
 $type = isset($_GET['type']) ? $_GET['type'] : 'csv';

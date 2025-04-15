@@ -10,7 +10,6 @@ $db_port = getenv('MYSQL_PORT') ?: 3306;
 // $conn = mysqli_connect($db_host, $db_username, $db_password, $db_name, $db_port);
 $conn = mysqli_connect($db_host, $db_username, $db_password, $db_name);
 
-
 // Check connection
 if (!$conn) {
     error_log("Database connection failed: " . mysqli_connect_error());
