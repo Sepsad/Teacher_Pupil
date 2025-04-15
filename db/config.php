@@ -1,12 +1,12 @@
 <?php
-// Remote database configuration
-$db_host = 'remote-database-server.com'; // Change this to your remote database server address
-$db_username = 'remote_user';
-$db_password = 'secure_password';
-$db_name = 'teacher_pupil_db';
-$db_port = 3306; // Add port if needed (default is 3306)
+// Database configuration - Get settings from environment variables for Docker
+$db_host = getenv('MYSQL_HOST') ?: 'database';
+$db_username = getenv('MYSQL_USER') ?: 'teacher_pupil_user';
+$db_password = getenv('MYSQL_PASSWORD') ?: 'secure_password';
+$db_name = getenv('MYSQL_DATABASE') ?: 'teacher_pupil_db';
+$db_port = getenv('MYSQL_PORT') ?: 3306;
 
-// Create a connection to remote database
+// Create a connection to the database
 $conn = mysqli_connect($db_host, $db_username, $db_password, $db_name, $db_port);
 
 // Check connection
