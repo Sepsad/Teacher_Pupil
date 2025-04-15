@@ -88,7 +88,16 @@ try {
             }
             
             $data = [];
-            $headers = ['participant_id', 'date_completed', 'trial_index', 'task', 'trial_type_id', 'response', 'rt', 'accuracy', 'reward', 'total_reward'];
+            // Include all fields from DATA-DICT
+            $headers = [
+                'participant_id', 'date_completed', 'trial_index', 'condition_trial_index', 
+                'task', 'trial_type_id', 'block_type', 'square_order', 'pair_id',
+                'rewarding_option', 'reward_probability', 'response', 'chosen_option',
+                'unchosen_option', 'chosen_color', 'unchosen_color', 'chosen_reward_probability',
+                'unchosen_reward_probability', 'chosen_reward_points', 'unchosen_reward_points',
+                'reward', 'total_reward', 'rt', 'accuracy', 'color_left', 'color_right',
+                'color_mapping', 'teaching_text'
+            ];
             
             while ($row = mysqli_fetch_assoc($result)) {
                 $trialData = json_decode($row['trial_data'], true);
