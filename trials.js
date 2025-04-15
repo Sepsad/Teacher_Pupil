@@ -607,7 +607,7 @@ const teachingTextEntry = {
             <p>Please write your instructions for the next participant below:</p>
             <div class="text-entry-container">
                 <textarea id="teaching-text" rows="10" cols="60" placeholder="Write your instructions here..."></textarea>
-                <p id="char-count">0/250 characters</p>
+                <p id="char-count">0 characters</p>
             </div>
         </div>
     `,
