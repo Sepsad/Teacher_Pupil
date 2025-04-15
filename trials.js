@@ -432,12 +432,12 @@ function createFeedbackTrial(trialType, trialIndex) {
             return createTrialHTML(trialType, squareOrder, trialIndex, true, chosenOption, reward);
         },
         choices: ["Continue"],
-        button_html: '<button class="jspsych-btn continue-btn">%choice%</button>',
-        // The plugin needs these options to ensure the button renders properly
-        margin_vertical: "20px",
-        margin_horizontal: "0px",
-        response_ends_trial: true, // Explicitly set this to ensure the trial ends when button is clicked
-        post_trial_gap: 0, // Make sure there's no delay between trials
+        button_html: '<button class="jspsych-btn continue-btn" style="position: relative; margin-top: 10px;">%choice%</button>',
+        // Match the margins from the choice trial to keep position consistent
+        margin_vertical: "-10px",
+        margin_horizontal: "40px",
+        response_ends_trial: true,
+        post_trial_gap: 0,
         data: {
             task: 'feedback',
             trial_index: trialIndex,
