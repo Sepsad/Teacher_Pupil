@@ -3,8 +3,8 @@ const settings = {
     // Block structure configuration
     blocks: {
         learning: {
-            count: 3,           // Number of learning blocks
-            trialsPerBlock: 6, // Trials per learning block (should be divisible by 3)
+            count: 1,           // Number of learning blocks
+            trialsPerBlock: 120, // Trials per learning block (should be divisible by 3)
             showBlockBreaks: true // Show break between blocks
         },
         test: {
