@@ -19,19 +19,29 @@ const jsPsych = initJsPsych({
         
         // Show completion message with prolific ID for reference
         document.getElementById('jspsych-target').innerHTML += `
-            <div style="position: fixed; top: 0; left: 0; right: 0; text-align: center; 
-            padding: 15px; background-color: #f0f0f0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-            <h2>Data Submission</h2>
-            <p>Saving data to the remote database... Please wait.</p>
-            <p>Your prolific ID is: <strong>${prolificId}</strong></p>
-            <p>Please make a note of this ID in case you need to reference it later.</p>
-            <button 
-            onclick="window.location.href='https://www.prolific.com'" 
-            style="background-color: #5cb85c; color: white; padding: 10px 20px; 
-            border: none; border-radius: 4px; font-size: 16px; cursor: pointer; 
-            margin-top: 15px;">
-            Return to Prolific
-            </button>
+            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 90%; max-width: 600px; text-align: center; background-color: white; 
+            padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000; font-family: Arial, sans-serif;">
+                <div style="margin-bottom: 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#5cb85c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">Data Submission</h2>
+                <p style="color: #666; font-size: 16px; margin-bottom: 15px;">Saving data to the remote database... Please wait.</p>
+                <div style="background-color: #f8f9fa; padding: 12px; border-radius: 6px; margin: 15px 0;">
+                    <p style="margin: 0; color: #333;">Your prolific ID is: <strong>${prolificId}</strong></p>
+                    <p style="margin: 5px 0 0; font-size: 14px; color: #666;">Please make a note of this ID in case you need to reference it later.</p>
+                </div>
+                <button 
+                onclick="window.location.href='https://www.prolific.com/'" 
+                style="background-color: #5cb85c; color: white; padding: 12px 24px; 
+                border: none; border-radius: 6px; font-size: 16px; cursor: pointer; 
+                margin-top: 20px; transition: background-color 0.2s; font-weight: 500;">
+                Return to Prolific
+                </button>
             </div>
         `;
     },
@@ -135,11 +145,30 @@ function saveDataToServer(prolificId, experimentData) {
                 
                 // Update the completion message
                 document.getElementById('jspsych-target').innerHTML += `
-                    <div style="text-align: center; margin-top: 5px; padding: 20px; background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; border-radius: 4px;">
-                        <p><strong>Success!</strong> Your data has been saved.</p>
-                        <p>Thank you for participating!</p>
-                        <p>Trials processed: ${data.trials_processed}</p>
-                        <p>Trials inserted: ${data.trials_inserted}</p>
+                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                    width: 90%; max-width: 600px; text-align: center; background-color: white;
+                    padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                    z-index: 1001; font-family: Arial, sans-serif;">
+                        <div style="margin-bottom: 15px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <h2 style="color: #28a745; margin-bottom: 15px; font-size: 24px;">Success!</h2>
+                        <p style="color: #333; font-size: 18px; margin-bottom: 20px;">Your data has been saved.</p>
+                        <p style="color: #666; font-size: 16px; margin-bottom: 5px;">Thank you for participating!</p>
+                        <div style="background-color: #f8f9fa; margin: 20px 0; padding: 15px; border-radius: 6px; display: inline-block;">
+                            <p style="margin: 0; color: #333;">Trials processed: ${data.trials_processed}</p>
+                            <p style="margin: 5px 0 0; color: #333;">Trials inserted: ${data.trials_inserted}</p>
+                        </div>
+                        <button 
+                        onclick="window.location.href='https://www.prolific.com'" 
+                        style="background-color: #28a745; color: white; padding: 12px 24px; 
+                        border: none; border-radius: 6px; font-size: 16px; cursor: pointer; 
+                        margin-top: 20px; transition: background-color 0.2s; font-weight: 500;">
+                        Return to Prolific
+                        </button>
                     </div>
                 `;
             } else {
@@ -149,21 +178,17 @@ function saveDataToServer(prolificId, experimentData) {
         })
         .catch(error => {
             console.error('Error saving data:', error);
-            showErrorMessage('Network or server error: ' + error.message);
             
-            
-            // Save data locally as backup
+            // Save data locally as backup FIRST
             localStorage.setItem('teacher_pupil_backup_data', JSON.stringify({
                 prolific_id: prolificId,
                 timestamp: new Date().toISOString(),
                 experiment_data: experimentData
             }));
             jsPsych.data.get().localSave('csv', prolificId + '.csv');
-            document.getElementById('jspsych-target').innerHTML += `
-                <div style="text-align: center; margin-top: 10px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeeba;">
-                    <p>A backup of your data has been saved to your browser's local storage.</p>
-                </div>
-            `;
+            
+            // Then show a combined error message with backup information
+            showErrorMessage('Network or server error: ' + error.message, true);
         });
     } catch (error) {
         console.error('Error processing experiment data:', error);
@@ -171,16 +196,41 @@ function saveDataToServer(prolificId, experimentData) {
     }
 }
 
-// Function to show error message to user
-function showErrorMessage(message) {
+// Function to show error message to user with optional backup info
+function showErrorMessage(message, backupCreated = false) {
     document.getElementById('jspsych-target').innerHTML += `
-        <div style="text-align: center; margin-top: 10px; padding: 20px; background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; border-radius: 4px;">
-            <p><strong>Error!</strong> There was a problem saving your data.</p>
-            <p>${message}</p>
-            <p>Please take a screenshot of this page including the error message above and contact the experimenter via hernan.anllo@learningplanetinstitute.org.</p>
-            <p>Please also attach the backup data to your email.</p>
-
-
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 90%; max-width: 600px; text-align: center; background-color: white;
+        padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        z-index: 1001; font-family: Arial, sans-serif;">
+            <div style="margin-bottom: 15px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+            </div>
+            <h2 style="color: #dc3545; margin-bottom: 15px; font-size: 24px;">Error!</h2>
+            <p style="color: #333; font-size: 18px; margin-bottom: 15px;">There was a problem saving your data.</p>
+            <div style="background-color: #f8d7da; padding: 15px; border-radius: 6px; margin: 15px 0; color: #721c24;">
+                ${message}
+            </div>
+            ${backupCreated ? `
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
+                        <path d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    <h3 style="color: #856404; margin: 0; font-size: 18px;">Backup Created</h3>
+                </div>
+                <p style="color: #856404; margin: 0; text-align: left;">A backup of your data has been saved to your browser's local storage and downloaded as CSV.</p>
+            </div>
+            ` : ''}
+            <div style="margin: 20px 0; padding: 15px; border-radius: 6px; background-color: #f8f9fa;">
+                <p style="margin: 0; font-weight: 500; color: #333;">Please take a screenshot of this page including the error message above.</p>
+                <p style="margin: 10px 0 0; color: #666;">Contact the experimenter via hernan.anllo@learningplanetinstitute.org</p>
+                <p style="margin: 5px 0 0; color: #666;">Please also attach the backup data to your email.</p>
+            </div>
         </div>
     `;
 }

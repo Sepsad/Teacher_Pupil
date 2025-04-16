@@ -1,15 +1,136 @@
 /* Define the trial types and create the timeline */
 
-// Create task instructions
-const taskInstructions = {
-    type: jsPsychInstructions,
-    pages: [
-        `<div class="instructions">
+// Create welcome page
+const welcomePage = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+        <div class="instructions">
             <h2>Welcome!</h2>
             <p>Thank you for participating in this study. We're happy to have you!</p>
             <p>With your help, we will try to understand how people learn new things and make decisions.</p>
             <p>Let's jump right into it!</p>
-        </div>`,
+        </div>
+    `,
+    choices: ["Continue"]
+};
+
+// Create consent form
+const consentForm = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+        <div class="instructions consent-container" style="max-width: 800px; margin: 0 auto; font-size: 14px;">
+            <h2 style="text-align: center; color: #2c3e50; margin-top: 0;">Consent Form</h2>
+            
+            <div class="consent-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div class="consent-col">
+                    <div class="consent-section" style="margin-bottom: 15px;">
+                        <h3 style="color: #3498db; margin: 0 0 8px 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Aim of the Study</h3>
+                        <p style="margin: 0; line-height: 1.4;">This is a study titled 'Knowledge transfer', led by Professor Stefano PALMINTERI. The primary goal of this research is to understand the learning processes involved in decision-making, focusing on the role of reinforcement learning in short-term and long-term cognition in groups of individuals. We want to emphasize that this study has no immediate application or clinical value, but it will contribute to deepen our understanding of human behavior.</p>
+                    </div>
+                    
+                    <div class="consent-section" style="margin-bottom: 15px;">
+                        <h3 style="color: #3498db; margin: 0 0 8px 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Procedure</h3>
+                        <p style="margin: 0; line-height: 1.4;">You will be asked to complete two cognitive tasks, that do not require any particular skill or knowledge. The estimated duration to complete the study is approximately 20 minutes. Depending on your performance, you might earn between £2.5 - £5.</p>
+                    </div>
+                    
+                    <div class="consent-section" style="margin-bottom: 15px;">
+                        <h3 style="color: #3498db; margin: 0 0 8px 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Research Results And Publication</h3>
+                        <p style="margin: 0; line-height: 1.4;">You will be able to check the publications resulting from this study on the following website.</p>
+                    </div>
+                </div>
+                
+                <div class="consent-col">
+                    <div class="consent-section" style="margin-bottom: 15px;">
+                        <h3 style="color: #3498db; margin: 0 0 8px 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Participation and Confidentiality</h3>
+                        <p style="margin: 0; line-height: 1.4;">Your participation in this research study is voluntary. You may stop and withdraw your participation at any time. In addition to your responses in the study, we will also collect these demographic data that you provided to Prolific when you signed up. The collected data will only be used for research purposes. Any shared or published dataset will not contain your name or Prolific ID.</p>
+                    </div>
+                    
+                    <div class="consent-section" style="margin-bottom: 15px;">
+                        <h3 style="color: #3498db; margin: 0 0 8px 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Contact And Additional Information</h3>
+                        <p style="margin: 0; line-height: 1.4;">For any questions or additional information, you can contact our research team via email at the following address: humanreinforcementlearning@gmail.com</p>
+                        
+                        <p style="margin: 10px 0 0 0; line-height: 1.4;">This research has been approved by the PSE Ethical Review Committee (IRB), call 2023-040, on October 11th, 2023</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="consent-checkbox-section" style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0 20px; border-left: 4px solid #3498db;">
+                <h3 style="color: #2c3e50; margin: 0 0 10px 0; font-size: 16px; text-align: center;">Consent</h3>
+                <p style="margin: 0 0 15px 0; text-align: center; line-height: 1.4;">Your participation in this study confirms that you have read this information, and wish to take part on it freely. Please check all boxes to continue:</p>
+                
+                <div class="consent-checkboxes" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="consent-item" style="display: flex; align-items: flex-start; gap: 10px;">
+                        <input type="checkbox" id="age-consent" class="consent-check" style="margin-top: 3px;">
+                        <label for="age-consent" style="color: #2c3e50;">I am 18 years old or more</label>
+                    </div>
+                    <div class="consent-item" style="display: flex; align-items: flex-start; gap: 10px;">
+                        <input type="checkbox" id="voluntary-consent" class="consent-check" style="margin-top: 3px;">
+                        <label for="voluntary-consent" style="color: #2c3e50;">My participation in this experiment is voluntary</label>
+                    </div>
+                    <div class="consent-item" style="display: flex; align-items: flex-start; gap: 10px;">
+                        <input type="checkbox" id="data-consent" class="consent-check" style="margin-top: 3px;">
+                        <label for="data-consent" style="color: #2c3e50;">I understand that my collected data will remain confidential and I can stop at any time without justification</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="consent-warning" id="consent-warning" style="color: #e74c3c; margin-top: 10px; text-align: center; display: none; font-weight: bold;">
+                Please check all consent boxes to continue.
+            </div>
+        </div>
+    `,
+    choices: ["I Consent"],
+    button_html: '<button class="jspsych-btn" id="consent-btn" disabled style="background-color: #3498db; color: white; padding: 10px 25px; border: none; border-radius: 4px; font-weight: bold; cursor: not-allowed; opacity: 0.7; transition: all 0.3s;">%choice%</button>',
+    on_load: function() {
+        const consentBtn = document.getElementById('consent-btn');
+        const checkboxes = document.querySelectorAll('.consent-check');
+        const warningElement = document.getElementById('consent-warning');
+        
+        // Check if all boxes are checked on any checkbox change
+        function updateConsentButton() {
+            let allChecked = true;
+            checkboxes.forEach(function(checkbox) {
+                if (!checkbox.checked) {
+                    allChecked = false;
+                }
+            });
+            
+            if (allChecked) {
+                consentBtn.disabled = false;
+                consentBtn.style.opacity = '1';
+                consentBtn.style.cursor = 'pointer';
+                warningElement.style.display = 'none';
+            } else {
+                consentBtn.disabled = true;
+                consentBtn.style.opacity = '0.7';
+                consentBtn.style.cursor = 'not-allowed';
+            }
+        }
+        
+        // Add event listeners to all checkboxes
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', updateConsentButton);
+        });
+        
+        // Add event listener to the button to show warning if clicked while disabled
+        consentBtn.addEventListener('click', function(e) {
+            if (this.disabled) {
+                warningElement.style.display = 'block';
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+    },
+    data: {
+        task: 'consent'
+    }
+};
+
+// Create task instructions (now without the welcome page)
+const taskInstructions = {
+    type: jsPsychInstructions,
+    pages: [
         `<div class="instructions">
             <h2>Task Instructions</h2>
             <p>This is a point-and-click game where you will select one of two squares displayed on the screen. Your goal is to find the squares that will make you win the most points</p>
@@ -475,7 +596,7 @@ function generateTestTrialSequence() {
     for (let i = sequence.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
-    }
+    };
     
     return sequence;
 }
@@ -745,6 +866,12 @@ function buildTimeline() {
             auto_preload: true
         }
     ];
+    
+    // Add welcome page
+    timeline.push(welcomePage);
+    
+    // Add consent form
+    timeline.push(consentForm);
     
     // Create a loop for task instructions and quiz
     const taskInstructionLoop = {
