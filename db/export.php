@@ -149,7 +149,7 @@ try {
             
         case 'teaching_only':
             // Get only teaching texts
-            $sql = "SELECT p.prolific_id, p.date_completed, tt.teaching_text 
+            $sql = "SELECT p.prolific_id, p.date_completed, tt.teaching_text, tt.color_pair 
                    FROM participants p 
                    JOIN teaching_texts tt ON p.id = tt.participant_id";
             $result = mysqli_query($conn, $sql);
@@ -159,13 +159,14 @@ try {
             }
             
             $data = [];
-            $headers = ['prolific_id', 'date_completed', 'teaching_text'];
+            $headers = ['prolific_id', 'date_completed', 'teaching_text', 'color_pair'];
             
             while ($row = mysqli_fetch_assoc($result)) {
                 $data[] = [
                     $row['prolific_id'],
                     $row['date_completed'],
-                    $row['teaching_text']
+                    $row['teaching_text'],
+                    $row['color_pair']
                 ];
             }
             

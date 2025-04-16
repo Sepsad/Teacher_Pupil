@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS teaching_texts (
     participant_id INT NOT NULL,
     teaching_text TEXT NOT NULL,
     character_count INT,
+    color_pair VARCHAR(100),
     submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (participant_id) REFERENCES participants(id)
 );

@@ -93,10 +93,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'color_mapping', 'phase', 'teaching_text'
         ];
         
-        // Calculate total score from trials and find teaching text
+        // Calculate total score from trials and find teaching text and color pair
         $total_score = 0;
         $teaching_text = '';
         $teaching_char_count = 0;
+        $color_pair = '';
         
         foreach ($parsed_trials as $trial) {
             // Calculate total score
@@ -112,11 +113,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $teaching_char_count = strlen($teaching_text);
                 }
             }
+            
+            // Extract color pair information from any trial with color_mapping
+            if (empty($color_pair) && isset($trial['color_mapping']) && !empty($trial['color_mapping'])) {
+                if (is_string($trial['color_mapping'])) {
+                    $color_pair = $trial['color_mapping'];
+                } else if (is_array($trial['color_mapping']) || is_object($trial['color_mapping'])) {
+                    $color_pair = json_encode($trial['color_mapping']);
+                }
+            }
         }
         
         log_debug('Total score: ' . $total_score);
         if (!empty($teaching_text)) {
             log_debug('Found teaching text with ' . $teaching_char_count . ' characters');
+        }
+        if (!empty($color_pair)) {
+            log_debug('Found color pair: ' . $color_pair);
         }
         
         // Start transaction for data integrity
@@ -357,14 +370,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Save teaching text separately to the teaching_texts table if it exists
         if (!empty($teaching_text)) {
-            $teaching_sql = "INSERT INTO teaching_texts (participant_id, teaching_text, character_count) VALUES (?, ?, ?)";
+            $teaching_sql = "INSERT INTO teaching_texts (participant_id, teaching_text, character_count, color_pair) VALUES (?, ?, ?, ?)";
             $teaching_stmt = mysqli_prepare($conn, $teaching_sql);
-            mysqli_stmt_bind_param($teaching_stmt, "isi", $participant_db_id, $teaching_text, $teaching_char_count);
+            mysqli_stmt_bind_param($teaching_stmt, "isis", $participant_db_id, $teaching_text, $teaching_char_count, $color_pair);
             
             if (!mysqli_stmt_execute($teaching_stmt)) {
                 log_debug('Error saving teaching text: ' . mysqli_stmt_error($teaching_stmt));
             } else {
-                log_debug('Teaching text saved successfully');
+                log_debug('Teaching text saved successfully with color pair');
             }
             mysqli_stmt_close($teaching_stmt);
         }
