@@ -629,7 +629,7 @@ const teachingTextEntry = {
         // Update character count on input
         textarea.addEventListener('input', function() {
             const count = textarea.value.length;
-            charCount.textContent = count + '/250 characters';
+            charCount.textContent = count + ' characters';
             
             // Enable submit button if count >= 250
             if (count >= 250) {
