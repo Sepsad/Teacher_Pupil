@@ -79,8 +79,8 @@ try {
         case 'csv':
             // Get all participants and their trial data
             $sql = "SELECT p.prolific_id, p.date_completed, t.trial_data 
-                   FROM participants p 
-                   JOIN trials t ON p.id = t.participant_id";
+                   FROM SS_participants_TEACH p 
+                   JOIN SS_trials_TEACH t ON p.id = t.participant_id";
             $result = mysqli_query($conn, $sql);
             
             if (!$result) {
@@ -126,8 +126,8 @@ try {
         case 'json':
             // Get all data as JSON
             $sql = "SELECT p.prolific_id, p.date_completed, t.trial_data 
-                   FROM participants p 
-                   JOIN trials t ON p.id = t.participant_id";
+                   FROM SS_participants_TEACH p 
+                   JOIN SS_trials_TEACH t ON p.id = t.participant_id";
             $result = mysqli_query($conn, $sql);
             
             if (!$result) {
@@ -150,8 +150,8 @@ try {
         case 'teaching_only':
             // Get only teaching texts
             $sql = "SELECT p.prolific_id, p.date_completed, tt.teaching_text, tt.color_pair 
-                   FROM participants p 
-                   JOIN teaching_texts tt ON p.id = tt.participant_id";
+                   FROM SS_participants_TEACH p 
+                   JOIN SS_teaching_texts_TEACH tt ON p.id = tt.participant_id";
             $result = mysqli_query($conn, $sql);
             
             if (!$result) {

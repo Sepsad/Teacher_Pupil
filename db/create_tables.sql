@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS teacher_pupil_db;
 USE teacher_pupil_db;
 
 -- Create participants table with status tracking
-CREATE TABLE IF NOT EXISTS participants (
+CREATE TABLE IF NOT EXISTS SS_participants_TEACH (
     id INT AUTO_INCREMENT PRIMARY KEY,
     prolific_id VARCHAR(255) NOT NULL,
     first_visit_time DATETIME NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS participants (
 );
 
 -- Updated trials table with all the required columns
-CREATE TABLE IF NOT EXISTS trials (
+CREATE TABLE IF NOT EXISTS SS_trials_TEACH (
     id INT AUTO_INCREMENT PRIMARY KEY,
     participant_id INT NOT NULL,
     trial_index INT NOT NULL,
@@ -76,30 +76,30 @@ CREATE TABLE IF NOT EXISTS trials (
     -- Complete trial data in JSON format
     trial_data JSON NOT NULL,
     
-    FOREIGN KEY (participant_id) REFERENCES participants(id),
+    FOREIGN KEY (participant_id) REFERENCES SS_participants_TEACH(id),
     INDEX idx_task (task),
     INDEX idx_trial_type (trial_type_id),
     INDEX idx_block_type (block_type)
 );
 
 -- Teaching texts table with additional metadata
-CREATE TABLE IF NOT EXISTS teaching_texts (
+CREATE TABLE IF NOT EXISTS SS_teaching_texts_TEACH (
     id INT AUTO_INCREMENT PRIMARY KEY,
     participant_id INT NOT NULL,
     teaching_text TEXT NOT NULL,
     character_count INT,
     color_pair VARCHAR(100),
     submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (participant_id) REFERENCES participants(id)
+    FOREIGN KEY (participant_id) REFERENCES SS_participants_TEACH(id)
 );
 
 -- Create table for storing CSV experiment data
-CREATE TABLE IF NOT EXISTS experiment_data (
+CREATE TABLE IF NOT EXISTS SS_experiment_data_TEACH (
     id INT AUTO_INCREMENT PRIMARY KEY,
     participant_id INT NOT NULL,
     csv_data MEDIUMTEXT NOT NULL,
     submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (participant_id) REFERENCES participants(id)
+    FOREIGN KEY (participant_id) REFERENCES SS_participants_TEACH(id)
 );
 
 -- Create a view for easy retrieval of aggregate data
@@ -113,10 +113,10 @@ CREATE TABLE IF NOT EXISTS experiment_data (
 --     tt.character_count as teaching_length,
 --     tt.teaching_text
 -- FROM 
---     participants p
+--     SS_participants_TEACH p
 -- LEFT JOIN 
---     trials t ON p.id = t.participant_id
+--     SS_trials_TEACH t ON p.id = t.participant_id
 -- LEFT JOIN 
---     teaching_texts tt ON p.id = tt.participant_id
+--     SS_teaching_texts_TEACH tt ON p.id = tt.participant_id
 -- GROUP BY 
 --     p.id;

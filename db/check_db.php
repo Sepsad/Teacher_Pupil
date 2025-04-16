@@ -11,7 +11,7 @@ $server_info = mysqli_get_server_info($conn);
 echo "<p>Server Info: <strong>{$server_info}</strong></p>";
 
 // Check if tables exist
-$tables = ["participants", "trials", "teaching_texts"];
+$tables = ["SS_participants_TEACH", "SS_trials_TEACH", "SS_teaching_texts_TEACH", "SS_experiment_data_TEACH"];
 echo "<h3>Table Status:</h3>";
 echo "<ul>";
 foreach ($tables as $table) {

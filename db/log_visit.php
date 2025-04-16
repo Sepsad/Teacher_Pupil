@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Check if this prolific ID already exists
-        $check_sql = "SELECT id FROM participants WHERE prolific_id = ?";
+        $check_sql = "SELECT id FROM SS_participants_TEACH WHERE prolific_id = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         mysqli_stmt_bind_param($check_stmt, "s", $prolific_id);
         mysqli_stmt_execute($check_stmt);
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (mysqli_stmt_num_rows($check_stmt) > 0) {
             // Participant exists, update their status if they're returning
-            $update_sql = "UPDATE participants SET status = 'started' WHERE prolific_id = ? AND status = 'abandoned'";
+            $update_sql = "UPDATE SS_participants_TEACH SET status = 'started' WHERE prolific_id = ? AND status = 'abandoned'";
             $update_stmt = mysqli_prepare($conn, $update_sql);
             mysqli_stmt_bind_param($update_stmt, "s", $prolific_id);
             mysqli_stmt_execute($update_stmt);
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => true, 'message' => 'Returning participant logged']);
         } else {
             // New participant, insert into database
-            $sql = "INSERT INTO participants (prolific_id, first_visit_time, status, browser_info) VALUES (?, NOW(), 'started', ?)";
+            $sql = "INSERT INTO SS_participants_TEACH (prolific_id, first_visit_time, status, browser_info) VALUES (?, NOW(), 'started', ?)";
             $stmt = mysqli_prepare($conn, $sql);
             mysqli_stmt_bind_param($stmt, "ss", $prolific_id, $browser_info);
             

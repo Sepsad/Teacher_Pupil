@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_begin_transaction($conn);
         
         // Check if this prolific_id already exists
-        $check_sql = "SELECT id FROM participants WHERE prolific_id = ?";
+        $check_sql = "SELECT id FROM SS_participants_TEACH WHERE prolific_id = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         
         if (!$check_stmt) {
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert or update participant record
         if ($participant_exists) {
             // Update existing participant record
-            $update_sql = "UPDATE participants SET 
+            $update_sql = "UPDATE SS_participants_TEACH SET 
                           date_completed = NOW(), 
                           status = 'completed', 
                           total_score = ?, 
@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_close($update_stmt);
             
             // Get the participant_db_id for foreign key references
-            $id_sql = "SELECT id FROM participants WHERE prolific_id = ?";
+            $id_sql = "SELECT id FROM SS_participants_TEACH WHERE prolific_id = ?";
             $id_stmt = mysqli_prepare($conn, $id_sql);
             mysqli_stmt_bind_param($id_stmt, "s", $prolific_id);
             mysqli_stmt_execute($id_stmt);
@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_close($id_stmt);
         } else {
             // Insert new participant record
-            $insert_sql = "INSERT INTO participants (prolific_id, first_visit_time, date_completed, status, total_score, browser_info) 
+            $insert_sql = "INSERT INTO SS_participants_TEACH (prolific_id, first_visit_time, date_completed, status, total_score, browser_info) 
                           VALUES (?, NOW(), NOW(), 'completed', ?, ?)";
             $insert_stmt = mysqli_prepare($conn, $insert_sql);
             mysqli_stmt_bind_param($insert_stmt, "sis", $prolific_id, $total_score, $browser_info);
@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Save the JSON data to experiment_data table
-        $json_sql = "INSERT INTO experiment_data (participant_id, csv_data) VALUES (?, ?)";
+        $json_sql = "INSERT INTO SS_experiment_data_TEACH (participant_id, csv_data) VALUES (?, ?)";
         $json_stmt = mysqli_prepare($conn, $json_sql);
         mysqli_stmt_bind_param($json_stmt, "is", $participant_db_id, $experiment_data_json);
         
@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $placeholders = array_fill(0, count($trial_columns), "?");
         
         // Construct the SQL statement
-        $trial_insert_sql = "INSERT INTO trials (" . implode(", ", $trial_columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
+        $trial_insert_sql = "INSERT INTO SS_trials_TEACH (" . implode(", ", $trial_columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
         
         $trial_stmt = mysqli_prepare($conn, $trial_insert_sql);
         
@@ -370,7 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Save teaching text separately to the teaching_texts table if it exists
         if (!empty($teaching_text)) {
-            $teaching_sql = "INSERT INTO teaching_texts (participant_id, teaching_text, character_count, color_pair) VALUES (?, ?, ?, ?)";
+            $teaching_sql = "INSERT INTO SS_teaching_texts_TEACH (participant_id, teaching_text, character_count, color_pair) VALUES (?, ?, ?, ?)";
             $teaching_stmt = mysqli_prepare($conn, $teaching_sql);
             mysqli_stmt_bind_param($teaching_stmt, "isis", $participant_db_id, $teaching_text, $teaching_char_count, $color_pair);
             
