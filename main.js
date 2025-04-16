@@ -19,11 +19,19 @@ const jsPsych = initJsPsych({
         
         // Show completion message with prolific ID for reference
         document.getElementById('jspsych-target').innerHTML += `
-            <div style="text-align: center; margin-top: 10px; padding: 10px; background-color: #f0f0f0;">
-                <h2>Data Submission</h2>
-                <p>Saving data to the remote database... Please wait.</p>
-                <p>Your prolific ID is: <strong>${prolificId}</strong></p>
-                <p>Please make a note of this ID in case you need to reference it later.</p>
+            <div style="position: fixed; top: 0; left: 0; right: 0; text-align: center; 
+            padding: 15px; background-color: #f0f0f0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            <h2>Data Submission</h2>
+            <p>Saving data to the remote database... Please wait.</p>
+            <p>Your prolific ID is: <strong>${prolificId}</strong></p>
+            <p>Please make a note of this ID in case you need to reference it later.</p>
+            <button 
+            onclick="window.location.href='https://www.prolific.com'" 
+            style="background-color: #5cb85c; color: white; padding: 10px 20px; 
+            border: none; border-radius: 4px; font-size: 16px; cursor: pointer; 
+            margin-top: 15px;">
+            Return to Prolific
+            </button>
             </div>
         `;
     },
@@ -127,7 +135,7 @@ function saveDataToServer(prolificId, experimentData) {
                 
                 // Update the completion message
                 document.getElementById('jspsych-target').innerHTML += `
-                    <div style="text-align: center; margin-top: 20px; padding: 20px; background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; border-radius: 4px;">
+                    <div style="text-align: center; margin-top: 5px; padding: 20px; background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; border-radius: 4px;">
                         <p><strong>Success!</strong> Your data has been saved.</p>
                         <p>Thank you for participating!</p>
                         <p>Trials processed: ${data.trials_processed}</p>
@@ -143,15 +151,16 @@ function saveDataToServer(prolificId, experimentData) {
             console.error('Error saving data:', error);
             showErrorMessage('Network or server error: ' + error.message);
             
+            
             // Save data locally as backup
             localStorage.setItem('teacher_pupil_backup_data', JSON.stringify({
                 prolific_id: prolificId,
                 timestamp: new Date().toISOString(),
                 experiment_data: experimentData
             }));
-            
+            jsPsych.data.get().localSave('csv', prolificId + '.csv');
             document.getElementById('jspsych-target').innerHTML += `
-                <div style="text-align: center; margin-top: 20px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeeba;">
+                <div style="text-align: center; margin-top: 10px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeeba;">
                     <p>A backup of your data has been saved to your browser's local storage.</p>
                 </div>
             `;
@@ -165,10 +174,12 @@ function saveDataToServer(prolificId, experimentData) {
 // Function to show error message to user
 function showErrorMessage(message) {
     document.getElementById('jspsych-target').innerHTML += `
-        <div style="text-align: center; margin-top: 20px; padding: 20px; background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; border-radius: 4px;">
+        <div style="text-align: center; margin-top: 10px; padding: 20px; background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; border-radius: 4px;">
             <p><strong>Error!</strong> There was a problem saving your data.</p>
             <p>${message}</p>
             <p>Please take a screenshot of this page including the error message above and contact the experimenter via hernan.anllo@learningplanetinstitute.org.</p>
+            <p>Please also attach the backup data to your email.</p>
+
 
         </div>
     `;
