@@ -83,3 +83,4 @@ function createTrialHTML(trialType, squareOrder, trialIndex, showReward = false,
     
     return html;
 }
+

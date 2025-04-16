@@ -174,6 +174,9 @@ function showErrorMessage(message) {
     `;
 }
 
+// Global variable to hold the tab change detector
+let tabChangeDetector;
+
 // Run the experiment when the page loads
 window.onload = function() {
     // Get prolific ID from URL or generate a new one
@@ -205,6 +208,121 @@ window.onload = function() {
     // Build the timeline
     const timeline = buildTimeline();
     
+    // Initialize tab change detection with jsPsych instance
+    tabChangeDetector = preventTabChange(jsPsych);
+    tabChangeDetector.enable();
+    
     // Run the experiment
     jsPsych.run(timeline);
 };
+
+
+
+/**
+ * Prevents tab changing by displaying a warning when user switches tabs or windows
+ * @param {Object} jsPsych - The jsPsych instance to control experiment flow
+ * @returns {Object} Object with enable and disable functions
+ */
+function preventTabChange(jsPsych) {
+    let warningDiv = null;
+    let isEnabled = false;
+    let visibilityHandler, focusHandler;
+    
+    // Function to show warning and pause experiment
+    function showWarning() {
+      if (warningDiv) return; // Don't create multiple warnings
+      
+      // Pause the experiment
+      if (jsPsych) {
+        jsPsych.pauseExperiment();
+      }
+      
+      warningDiv = document.createElement('div');
+      warningDiv.style.position = 'fixed';
+      warningDiv.style.top = '50%';
+      warningDiv.style.left = '50%';
+      warningDiv.style.transform = 'translate(-50%, -50%)';
+      warningDiv.style.width = '400px';
+      warningDiv.style.maxWidth = '90%';
+      warningDiv.style.padding = '25px';
+      warningDiv.style.backgroundColor = '#f8d7da';
+      warningDiv.style.color = '#721c24';
+      warningDiv.style.border = '1px solid #f5c6cb';
+      warningDiv.style.borderRadius = '8px';
+      warningDiv.style.textAlign = 'center';
+      warningDiv.style.zIndex = '9999';
+      warningDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+      
+      // Create the warning message with a button
+      warningDiv.innerHTML = `
+        <div style="margin-bottom: 15px;">
+          <strong>Warning!</strong> You've switched tabs or windows during the experiment.
+          <p>The experiment has been paused. Please remain on this tab for the duration of the experiment.</p>
+        </div>
+        <button id="resume-experiment" style="padding: 8px 16px; background-color: #dc3545; color: white; 
+        border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+          Resume Experiment
+        </button>
+      `;
+      
+      document.body.appendChild(warningDiv);
+      
+      // Add click event to the button
+      document.getElementById('resume-experiment').addEventListener('click', function() {
+        document.body.removeChild(warningDiv);
+        warningDiv = null;
+        
+        // Resume the experiment
+        if (jsPsych) {
+          jsPsych.resumeExperiment();
+        }
+      });
+    }
+  
+    // Setup visibility change detection
+    function setupVisibilityDetection() {
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden && isEnabled) {
+          // When tab becomes active again, show warning
+          const handler = function() {
+            if (!document.hidden) {
+              showWarning();
+              document.removeEventListener('visibilitychange', handler);
+            }
+          };
+          visibilityHandler = handler;
+          document.addEventListener('visibilitychange', handler);
+        }
+      });
+      
+      // Listen for window blur events
+      window.addEventListener('blur', function() {
+        if (isEnabled) {
+          // When window regains focus, show warning
+          const handler = function() {
+            showWarning();
+            window.removeEventListener('focus', handler);
+          };
+          focusHandler = handler;
+          window.addEventListener('focus', handler);
+        }
+      });
+    }
+    
+    return {
+      enable: function() {
+        isEnabled = true;
+        setupVisibilityDetection();
+        console.log("Tab change detection enabled");
+      },
+      
+      disable: function() {
+        isEnabled = false;
+        if (warningDiv && warningDiv.parentNode) {
+          warningDiv.parentNode.removeChild(warningDiv);
+        }
+        warningDiv = null;
+        console.log("Tab change detection disabled");
+      }
+    };
+  }
