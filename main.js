@@ -36,7 +36,7 @@ const jsPsych = initJsPsych({
                     <p style="margin: 5px 0 0; font-size: 14px; color: #666;">Please make a note of this ID in case you need to reference it later.</p>
                 </div>
                 <button 
-                onclick="window.location.href='https://www.prolific.com/'" 
+                onclick="window.location.href='https://app.prolific.com/submissions/complete?cc=CLM2O650'" 
                 style="background-color: #5cb85c; color: white; padding: 12px 24px; 
                 border: none; border-radius: 6px; font-size: 16px; cursor: pointer; 
                 margin-top: 20px; transition: background-color 0.2s; font-weight: 500;">
@@ -163,7 +163,7 @@ function saveDataToServer(prolificId, experimentData) {
                             <p style="margin: 5px 0 0; color: #333;">Trials inserted: ${data.trials_inserted}</p>
                         </div>
                         <button 
-                        onclick="window.location.href='https://www.prolific.com'" 
+                        onclick="window.location.href='https://app.prolific.com/submissions/complete?cc=CLM2O650'" 
                         style="background-color: #28a745; color: white; padding: 12px 24px; 
                         border: none; border-radius: 6px; font-size: 16px; cursor: pointer; 
                         margin-top: 20px; transition: background-color 0.2s; font-weight: 500;">
