@@ -173,17 +173,10 @@ const teachingInstructions = {
         </div>`,
         `<div class="instructions">
             <h2>Remember</h2>
-                      "At the end of the study, we will convert all collected points into pounds and add them to the fixed bonus provided by Prolific. "
-                     "The conversion rate is 1 point = 1.2 pence. "
-                     "If your performance is good, you could even double your earnings!"
-        </div>`,
-        `<div class="instructions">
-            <h2>Explanations from the teacher</h2>
             <p>At the end of the study, we will convert all collected points into pounds and add them to the fixed bonus provided by Prolific.</p>
             <p>The conversion rate is 1 point = 1.2 pence.</p>
-            <p> <strong> But since you will be a teacher </strong>, your bonus earnings will not depend on the points you earn but rather on the points your pupil earns.</p>
-            <p>It is therefore in your best interest to explain the task in the best possible way. If your pupil is good enough you could double your earnings!</p>
-        </div>`
+            <p> <strong> It is therefore in your best interest to pay attention to clues and instructions </strong>, as winning enough points could lead you to double your earnings!</p>
+         </div>`
     ],
     show_clickable_nav: true
 };
@@ -329,40 +322,6 @@ function createTestTrial(trialType, trialIndex, squareOrder) {
     };
 }
 
-// Generate a sequence of trials for one learning block
-function generateLearningBlockSequence() {
-    let sequence = [];
-    const trialsPerBlock = settings.blocks.learning.trialsPerBlock;
-    
-    // Create arrays for each trial type based on their proportions
-    settings.trialTypes.forEach(type => {
-        // Calculate trials for this block based on proportion
-        const trialCount = Math.round(trialsPerBlock * type.proportion);
-        for (let i = 0; i < trialCount; i++) {
-            sequence.push({...type});
-        }
-    });
-    
-    // Adjust if the total doesn't match expected block size
-    while (sequence.length > trialsPerBlock) {
-        sequence.pop(); // Remove extra trials
-    }
-    while (sequence.length < trialsPerBlock) {
-        // Add trials from the most common type
-        const largestType = {...settings.trialTypes.reduce((a, b) => 
-            (a.proportion > b.proportion) ? a : b)};
-        sequence.push(largestType);
-    }
-    
-    // Shuffle the sequence to interleave trial types
-    for (let i = sequence.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
-    }
-    
-    return sequence;
-}
-
 // Generate a test block sequence with equal distribution of trial types
 function generateTestBlockSequence() {
     let sequence = [];
@@ -406,32 +365,13 @@ function buildTimeline() {
     
     // Add consent form
     timeline.push(consentForm);
+
+    // Add task bare-boned instructions for pupil
+    timeline.push(taskInstructions);
     
-    // I guess no need for loop anymore? But I'm leaving it here just in case
-    const taskInstructionLoop = {
-        timeline: [taskInstructions],
-        loop_function: function() {
-            // Get the most recent quiz data
-            const lastQuizData = jsPsych.data.get().last(1).values()[0];
-            // If they failed the quiz, repeat the instructions and quiz
-            return !lastQuizData.passed_quiz;
-        }
-    };
-    
-    
-    // We can probably recycle this loop for the teacher instructions
-    const teachingInstructionLoop = {
-        timeline: [teachingInstructions, teachingCheckInstructionsAndStart],
-        loop_function: function() {
-            // Get the most recent quiz data
-            const lastQuizData = jsPsych.data.get().last(1).values()[0];
-            // If they failed the quiz, repeat the instructions and quiz
-            return !lastQuizData.passed_teaching_quiz;
-        }
-    };
-    
-    // Add the teaching instruction loop to the timeline
-    timeline.push(teachingInstructionLoop);
+    // Add TEACHER instructions (we will probably need a loop here)
+    timeline.push(teacherInstructions);
+
     
     // Add test blocks
     for (let blockIdx = 0; blockIdx < settings.blocks.test.count; blockIdx++) {
