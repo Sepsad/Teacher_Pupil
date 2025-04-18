@@ -482,11 +482,6 @@ function buildTimeline() {
         }
     }
     
-    // Add teaching phase trials
-    timeline.push(teachingIntro);
-    timeline.push(teachingDetails);
-    timeline.push(teachingTextEntry);
-
     // Add final results
     timeline.push(createFinalScreen());
     
