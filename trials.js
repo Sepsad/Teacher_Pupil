@@ -407,7 +407,7 @@ function buildTimeline() {
     // Add consent form
     timeline.push(consentForm);
     
-    // Create a loop for task instructions and quiz
+    // I guess no need for loop anymore? But I'm leaving it here just in case
     const taskInstructionLoop = {
         timeline: [taskInstructions],
         loop_function: function() {
@@ -418,13 +418,8 @@ function buildTimeline() {
         }
     };
     
-    // Add the task instruction loop to the timeline
-    timeline.push(taskInstructionLoop);
     
-    // Add task quiz congratulation message
-    timeline.push(quizPassCongratulation);
-    
-    // Create a loop for teaching instructions and quiz
+    // We can probably recycle this loop for the teacher instructions
     const teachingInstructionLoop = {
         timeline: [teachingInstructions, teachingCheckInstructionsAndStart],
         loop_function: function() {
@@ -437,9 +432,6 @@ function buildTimeline() {
     
     // Add the teaching instruction loop to the timeline
     timeline.push(teachingInstructionLoop);
-    
-    // Add teaching quiz congratulation message
-    timeline.push(teachingQuizPassCongratulation);
 
     // Add learning blocks
     for (let blockIdx = 0; blockIdx < settings.blocks.learning.count; blockIdx++) {
