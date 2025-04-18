@@ -188,19 +188,18 @@ const teachingInstructions = {
     show_clickable_nav: true
 };
 
-//DISPLAY 
+//DISPLAY TEACHER INSTRUCTIONS HERE. 
 
 // Launch experiment
-const teachingQuizPassCongratulation = {
+const teachingCheckInstructionsAndStart = { //PARTICIPANTS SHOULD BE ABLE TO GO BACK AND READ THE INSTRUCTIONS AGAIN IF THEY WANT TO
     type: jsPsychHtmlButtonResponse,
     stimulus: `
         <div class="instructions">
-            <h2>Great Job!</h2>
-            <p>You have passed the teaching quiz successfully and understand your role as a teacher.</p>
-            <p>You are now ready to begin the game.</p>
+            <h2>Are you ready?</h2>
+            <p>You can now decide wether you want to read the instructions again, or start the game.</p>
         </div>
     `,
-    choices: ["Begin Game"]
+    choices: ["Begin Game"] //ADD CHOICE TO GO BACK PLEASE (see slide 10 of Teacher/Pupil task - Pupil ppt that we made when discussing the task)
 };
 
 // Create final screen
@@ -219,127 +218,6 @@ function createFinalScreen() {
     };
 }
 
-// Create choice trial
-function createChoiceTrial(trialType, trialIndex, squareOrder) {
-    // Calculate condition-specific trial index
-    const conditionTrialCounts = {};
-    
-    return {
-        type: jsPsychHtmlButtonResponse,
-        stimulus: function() {
-            return createTrialHTML(trialType, squareOrder, trialIndex);
-        },
-        choices: [],  // Empty choices because we're using custom buttons
-        button_html: null,  // No default button HTML
-        margin_vertical: "80px",
-        margin_horizontal: "40px",
-        data: {
-            trial_index: trialIndex,  // 1) Trial number (whole experiment)
-            task: 'choice',
-            square_order: squareOrder,
-            trial_type_id: trialType.id,
-            rewarding_option: trialType.rewardingOption,
-            reward_probability: trialType.probability,
-            block_type: 'learning'  // 16) Block type
-        },
-        on_start: function(trial) {
-            // Add event listeners after the trial renders
-            setTimeout(function() {
-                document.querySelectorAll('.jspsych-html-button-response-button').forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        const choice = parseInt(this.getAttribute('data-choice'));
-                        // End trial with the selected option
-                        jsPsych.finishTrial({
-                            response: choice,
-                            rt: performance.now() - trial.startTime
-                        });
-                    });
-                });
-            }, 0);
-        },
-        on_load: function() {
-            this.startTime = performance.now();
-        },
-        on_finish: function(data) {
-            const chosenOption = data.response;
-            const unchosenOption = chosenOption === 0 ? 1 : 0;
-            const reward = getReward(chosenOption, trialType);
-            settings.totalReward += reward;
-            
-            // Get condition-specific trial index
-            if (!conditionTrialCounts[trialType.id]) {
-                conditionTrialCounts[trialType.id] = 0;
-            }
-            const conditionTrialIndex = conditionTrialCounts[trialType.id]++;
-            
-            // Store all required data fields
-            data.chosen_option = chosenOption;                       // 8) Chosen square ID
-            data.unchosen_option = unchosenOption;                   // 9) Unchosen square ID
-            data.condition_trial_index = conditionTrialIndex;        // 2) Trial number for this condition
-            data.chosen_color = settings.option_colors[squareOrder[data.response]]; // 3) Color of chosen square
-            data.unchosen_color = settings.option_colors[squareOrder[unchosenOption]]; // 4) Color of unchosen square
-            data.pair_id = settings.option_colors.join('-');         // 5) Pair ID
-            data.chosen_reward_probability = trialType.rewardingOption === chosenOption ? trialType.probability : 0; // 6) Reward probs of chosen
-            data.unchosen_reward_probability = trialType.rewardingOption === unchosenOption ? trialType.probability : 0; // 7) Reward probs of unchosen
-            data.chosen_reward_points = trialType.rewardingOption === chosenOption ? trialType.reward : 0; // 10) Reward points of chosen
-            data.unchosen_reward_points = trialType.rewardingOption === unchosenOption ? trialType.reward : 0; // 11) Reward points of unchosen
-            data.reward = reward;                                    // 12) Actual reward obtained
-            data.total_reward = settings.totalReward;                // 13) Cumulative reward
-            data.accuracy = chosenOption === trialType.rewardingOption ? 1 : 0; // 14) Accuracy
-            // 15) Response time (rt) is already stored by jsPsych
-            
-            // Store color information
-            data.color_left = settings.option_colors[squareOrder[0]];
-            data.color_right = settings.option_colors[squareOrder[1]];
-            data.color_mapping = {
-                0: settings.option_colors[0],
-                1: settings.option_colors[1]
-            };
-        }
-    };
-}
-
-// Create feedback trial
-function createFeedbackTrial(trialType, trialIndex) {
-    return {
-        type: jsPsychHtmlButtonResponse,
-        stimulus: function() {
-            const lastTrial = jsPsych.data.get().last(1).values()[0];
-            const chosenOption = lastTrial.chosen_option;
-            const reward = lastTrial.reward;
-            const squareOrder = lastTrial.square_order;
-            
-            // Return only the trial display HTML, let the plugin handle the button
-            return createTrialHTML(trialType, squareOrder, trialIndex, true, chosenOption, reward);
-        },
-        choices: ["Continue"],
-        button_html: '<button class="jspsych-btn continue-btn" style="position: relative; margin-top: 10px;">%choice%</button>',
-        // Match the margins from the choice trial to keep position consistent
-        margin_vertical: "-10px",
-        margin_horizontal: "40px",
-        response_ends_trial: true,
-        post_trial_gap: 0,
-        data: {
-            task: 'feedback',
-            trial_index: trialIndex,
-            trial_type_id: trialType.id
-        }
-    };
-}
-
-// Add test block instructions
-const testBlockInstructions = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>First Part</h2>
-            <p>Great job! You have completed the first part.</p>
-            <p>We will now play Part 2 of the game. The game will remain the same as what you have seen before: everything you have learned about strategy and the point value of each square is still valid.</p>
-            <p>The only difference is that now you will not see how many point you actually obtained after clicking on a square.</p>
-        </div>
-    `,
-    choices: ["Start Test Block"]
-};
 
 // Function to generate a test trial sequence
 function generateTestTrialSequence() {
@@ -451,110 +329,6 @@ function createTestTrial(trialType, trialIndex, squareOrder) {
     };
 }
 
-// Create teaching intro screen
-const teachingIntro = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Teaching Phase</h2>
-            <p>Thank you for going over the game. Now, the time has come for you to explain the game to your pupil, as clear as possible.</p>
-        </div>
-    `,
-    choices: ["Continue"]
-};
-
-// Create teaching detailed instructions
-const teachingDetails = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Teaching Instructions</h2>
-            <p>Remember, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
-            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same images.</p>
-            <p>You really want your pupil to succeed! After all, remember your extra bonus depends on their performance.</p>
-            <p>Also remember that a good teaching text is at least 250 characters, but of course you can extend yourself as much as you want. Don't hesitate to share tips, strategies, or any other piece of information that you think will help your pupil.</p>
-        </div>
-    `,
-    choices: ["Continue to Write Instructions"]
-};
-
-// Create teaching text entry screen
-const teachingTextEntry = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Write Your Instructions</h2>
-            <p>Please write your instructions for the next participant below:</p>
-            <div class="text-entry-container">
-                <textarea id="teaching-text" rows="10" cols="60" placeholder="Write your instructions here..."></textarea>
-                <p id="char-count">0 characters</p>
-            </div>
-        </div>
-    `,
-    choices: ["Submit Instructions"],
-    button_html: '<button class="jspsych-btn" id="submit-btn" disabled>%choice%</button>',
-    data: {
-        task: 'teaching_text'
-    },
-    on_load: function() {
-        const textarea = document.getElementById('teaching-text');
-        const charCount = document.getElementById('char-count');
-        const submitBtn = document.getElementById('submit-btn');
-        
-        // Disable paste
-        textarea.addEventListener('paste', function(e) {
-            e.preventDefault();
-            alert("Pasting text is not allowed. Please type your instructions.");
-        });
-        
-        // Update character count on input
-        textarea.addEventListener('input', function() {
-            const count = textarea.value.length;
-            charCount.textContent = count + ' characters';
-            
-            // Enable submit button if count >= 250
-            if (count >= 250) {
-                submitBtn.disabled = false;
-                charCount.style.color = 'green';
-            } else {
-                submitBtn.disabled = true;
-                charCount.style.color = 'red';
-            }
-        });
-        
-        // Store the teaching text in a global variable when the button is clicked
-        submitBtn.addEventListener('click', function() {
-            jsPsych.data.get().addToLast({
-                teaching_text: textarea.value
-            });
-        });
-    },
-    on_finish: function(data) {
-        // The teaching text is already saved via the button click event
-    }
-};
-
-// Create a block break screen
-function createBlockBreakScreen(phase, blockNumber, totalBlocks) {
-    return {
-        type: jsPsychHtmlButtonResponse,
-        stimulus: `
-            <div class="instructions">
-                <h2> Block ${blockNumber + 1} out of ${totalBlocks}</h2>
-                <p>You've completed block ${blockNumber + 1} out of ${totalBlocks}.</p>
-
-                <p>Take a short break if you need to. Click the button below when you're ready to continue.</p>
-            </div>
-        `,
-        choices: ["Continue to Next Block"],
-        data: {
-            task: 'block_break',
-            phase: phase,
-            block_number: blockNumber
-        }
-    };
-}
-
 // Generate a sequence of trials for one learning block
 function generateLearningBlockSequence() {
     let sequence = [];
@@ -635,7 +409,7 @@ function buildTimeline() {
     
     // Create a loop for task instructions and quiz
     const taskInstructionLoop = {
-        timeline: [taskInstructions, quizQuestions, quizCheck],
+        timeline: [taskInstructions],
         loop_function: function() {
             // Get the most recent quiz data
             const lastQuizData = jsPsych.data.get().last(1).values()[0];
@@ -652,7 +426,7 @@ function buildTimeline() {
     
     // Create a loop for teaching instructions and quiz
     const teachingInstructionLoop = {
-        timeline: [teachingInstructions, teachingQuizQuestions, teachingQuizCheck],
+        timeline: [teachingInstructions, teachingCheckInstructionsAndStart],
         loop_function: function() {
             // Get the most recent quiz data
             const lastQuizData = jsPsych.data.get().last(1).values()[0];
