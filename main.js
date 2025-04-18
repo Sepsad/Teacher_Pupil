@@ -9,7 +9,7 @@ const jsPsych = initJsPsych({
         
         // Generate a unique prolific ID (or use one provided via URL parameters)
         const urlParams = new URLSearchParams(window.location.search);
-        const prolificId = urlParams.get('prolific_id') || generateProlificId();
+        const prolificId = urlParams.get('PROLIFIC_PID') || generateProlificId();
         
         // Send data to server
         saveDataToServer(prolificId, experimentData);
@@ -110,7 +110,7 @@ function saveDataToServer(prolificId, experimentData) {
             experiment_data: experimentData, // JSON data as string
             browser_info: getBrowserInfo()
         };
-        
+         
         // Send the data using fetch
         fetch(window.location.origin + '/db/save_data.php', {
             method: 'POST',
@@ -242,7 +242,7 @@ let tabChangeDetector;
 window.onload = function() {
     // Get prolific ID from URL or generate a new one
     const urlParams = new URLSearchParams(window.location.search);
-    let prolificId = urlParams.get('prolific_id');
+    let prolificId = urlParams.get('PROLIFIC_PID');
     
     // Check if we have a stored prolific ID
     if (!prolificId) {
@@ -257,9 +257,9 @@ window.onload = function() {
     }
     
     // Update URL with prolific ID without reloading page
-    if (!urlParams.has('prolific_id')) {
+    if (!urlParams.has('PROLIFIC_PID')) {
         const newUrl = new URL(window.location);
-        newUrl.searchParams.set('prolific_id', prolificId);
+        newUrl.searchParams.set('PROLIFIC_PID', prolificId);
         window.history.replaceState({}, '', newUrl);
     }
     
