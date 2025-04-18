@@ -70,7 +70,7 @@ function getBrowserInfo() {
 // Function to log the initial visit
 function logVisit(prolificId) {
     const visitData = {
-        prolific_id: prolificId,
+        prolific_id: prolificId,  // Keep this as prolific_id for server compatibility
         browser_info: getBrowserInfo()
     };
     
@@ -104,7 +104,7 @@ function saveDataToServer(prolificId, experimentData) {
     try {
         console.log('Attempting to save JSON data to server for participant:', prolificId);
         
-        // Create the data object to send
+        // Create the data object to send - keep using prolific_id as the key for server compatibility
         const dataToSend = {
             prolific_id: prolificId,
             experiment_data: experimentData, // JSON data as string

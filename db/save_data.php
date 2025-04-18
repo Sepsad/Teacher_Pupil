@@ -56,7 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Extract prolific ID and experiment data (now JSON string)
-        $prolific_id = isset($data['prolific_id']) ? mysqli_real_escape_string($conn, $data['prolific_id']) : '';
+        // Accept either prolific_id or PROLIFIC_PID for compatibility
+        $prolific_id = '';
+        if (isset($data['prolific_id'])) {
+            $prolific_id = mysqli_real_escape_string($conn, $data['prolific_id']);
+        } elseif (isset($data['PROLIFIC_PID'])) {
+            $prolific_id = mysqli_real_escape_string($conn, $data['PROLIFIC_PID']);
+        }
+        
         $experiment_data_json = isset($data['experiment_data']) ? $data['experiment_data'] : '';
         $browser_info = isset($data['browser_info']) ? mysqli_real_escape_string($conn, json_encode($data['browser_info'])) : '';
         
