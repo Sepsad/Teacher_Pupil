@@ -432,9 +432,6 @@ function buildTimeline() {
     
     // Add the teaching instruction loop to the timeline
     timeline.push(teachingInstructionLoop);
-
-    // Add test block instructions
-    timeline.push(testBlockInstructions);
     
     // Add test blocks
     for (let blockIdx = 0; blockIdx < settings.blocks.test.count; blockIdx++) {
