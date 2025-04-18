@@ -182,6 +182,17 @@ const teachingInstructions = {
 };
 
 //DISPLAY TEACHER INSTRUCTIONS HERE. 
+const displayTeacherInstr = {
+    type: jsPsychInstructions,
+    pages: [
+        `<div class="instructions">
+            <h2>Teacher instructions </h2>
+            <p>HERE</b>. </p>
+        </div>`
+    ],
+    show_clickable_nav: true
+};
+
 
 // Launch experiment
 const teachingCheckInstructionsAndStart = { //PARTICIPANTS SHOULD BE ABLE TO GO BACK AND READ THE INSTRUCTIONS AGAIN IF THEY WANT TO
@@ -192,7 +203,7 @@ const teachingCheckInstructionsAndStart = { //PARTICIPANTS SHOULD BE ABLE TO GO 
             <p>You can now decide wether you want to read the instructions again, or start the game.</p>
         </div>
     `,
-    choices: ["Begin Game"] //ADD CHOICE TO GO BACK PLEASE (see slide 10 of Teacher/Pupil task - Pupil ppt that we made when discussing the task)
+    choices: ["Read Instructions Again","Begin Game"] //ADD CHOICE TO GO BACK PLEASE (see slide 10 of Teacher/Pupil task - Pupil ppt that we made when discussing the task)
 };
 
 // Create final screen
@@ -369,10 +380,15 @@ function buildTimeline() {
     // Add task bare-boned instructions for pupil
     timeline.push(taskInstructions);
     
-    // Add TEACHER instructions (we will probably need a loop here)
-    timeline.push(teacherInstructions);
+    // Add intro to teacher instructions 
+    timeline.push(teachingInstructions);
 
-    
+    // Add TEACHER instructions (we will probably need a loop here)
+    timeline.push(displayTeacherInstr);
+
+    // Add TEACHER instructions go back path (we will probably need a loop here)
+    timeline.push(teachingCheckInstructionsAndStart);
+
     // Add test blocks
     for (let blockIdx = 0; blockIdx < settings.blocks.test.count; blockIdx++) {
         // Add block start instruction if it's not the first block
