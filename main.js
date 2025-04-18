@@ -112,7 +112,7 @@ function saveDataToServer(prolificId, experimentData) {
         };
          
         // Send the data using fetch
-        fetch(window.location.origin + '/db/save_data.php', {
+        fetch(window.location.origin + '/Teacher_Pupil/db/save_data.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -229,7 +229,6 @@ function showErrorMessage(message, backupCreated = false) {
             <div style="margin: 20px 0; padding: 15px; border-radius: 6px; background-color: #f8f9fa;">
                 <p style="margin: 0; font-weight: 500; color: #333;">Please take a screenshot of this page including the error message above.</p>
                 <p style="margin: 10px 0 0; color: #666;">Contact the experimenter via hernan.anllo@learningplanetinstitute.org</p>
-                <p style="margin: 5px 0 0; color: #666;">Please also attach the backup data to your email.</p>
             </div>
         </div>
     `;
