@@ -145,7 +145,7 @@ const taskInstructions = {
 
             </div>
 
-            <p>When you click on a square to select it, you will obtain the amount of points associated to it. Keep in mind that the squares come in pairs,  and one of the squares will always be better than the other  at winning you points.</p>
+            <p>When you click on a square to select it, you will obtain the amount of points associated to it.</p>
             <p><strong>Note:</strong> The squares in the actual task will be different from the ones in this example.</p>
         </div>`,
         `<div class="instructions">
@@ -157,35 +157,17 @@ const taskInstructions = {
             </div>
    
             <p>This is someone choosing the option on the left and winning +10 points.</p>
-        </div>`,
-        `<div class="instructions">
-            <h2>READ CAREFULLY!</h2>
-            <p>The value of the squares may change depending on features external to the squares. </p>
-            <div class="squares-frame" style="margin: 30px auto; position: relative">
-                <div style="width: 20px; height: 20px; background: blue; border-radius: 80%; position: absolute; left: 20px; top: 50%; transform: translateY(-50%)"></div>
-                <div class="option-container">
-                    <div class="option-wrapper">
-                        <div class="square-option square-green selected" style="background-color: ${settings.instruction_colors[0]} !important;"></div>
-                        <div class="reward-display">+0 points</div>
-                    </div>
-                    <div class="option-wrapper">
-                        <div class="square-option square-purple" style="background-color: ${settings.instruction_colors[1]} !important;"></div>
-                    </div>
-                </div>
-            </div>
-            <p></p>
-            <p>Make sure you identify all the rules that determine whether the square gives you points on a given trial.</p>
         </div>`
     ],
     show_clickable_nav: true
 };
 
-// Create teaching instructions separately
+// Create showcase of teaching instructions separately
 const teachingInstructions = {
     type: jsPsychInstructions,
     pages: [
         `<div class="instructions">
-            <h2>Instructions: Teaching</h2>
+            <h2>READ CAREFULY</h2>
             <p>Once you are done playing the game, we will ask you to write down a set of instructions for the next player.</p>
             <p>Unlike you, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
         </div>`,
