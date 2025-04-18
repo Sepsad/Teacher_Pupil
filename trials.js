@@ -433,58 +433,6 @@ function buildTimeline() {
     // Add the teaching instruction loop to the timeline
     timeline.push(teachingInstructionLoop);
 
-    // Add learning blocks
-    for (let blockIdx = 0; blockIdx < settings.blocks.learning.count; blockIdx++) {
-        // Add block start instruction if it's not the first block
-        if (blockIdx > 0) {
-            timeline.push({
-                type: jsPsychHtmlButtonResponse,
-                stimulus: `
-                    <div class="instructions">
-                        <h2> Block ${blockIdx + 1}</h2>
-                        <p>You are about to start block ${blockIdx + 1} of ${settings.blocks.learning.count}.</p>
-                        <p>Remember, Your goal is to find the squares that will make you win the most points.</p>
-                    </div>
-                `,
-                choices: ["Begin Block"],
-                data: {
-                    task: 'block_start',
-                    phase: 'learning',
-                    block_number: blockIdx
-                }
-            });
-        }
-        
-        // Generate trial sequence for this block
-        const blockSequence = generateLearningBlockSequence();
-        
-        // Calculate global trial index base for this block
-        const blockTrialOffset = blockIdx * settings.blocks.learning.trialsPerBlock;
-        
-        // Add trials to the timeline
-        for (let i = 0; i < blockSequence.length; i++) {
-            // Get the trial type for this trial
-            const trialType = blockSequence[i];
-            
-            // Calculate global trial index
-            const globalTrialIndex = blockTrialOffset + i;
-            
-            // Generate random order for this trial pair
-            const squareOrder = getRandomSquareOrder();
-            
-            // Add choice trial
-            timeline.push(createChoiceTrial(trialType, globalTrialIndex, squareOrder));
-            
-            // Add feedback trial
-            timeline.push(createFeedbackTrial(trialType, globalTrialIndex));
-        }
-        
-        // Add block break if not the last block
-        if (blockIdx < settings.blocks.learning.count - 1 && settings.blocks.learning.showBlockBreaks) {
-            timeline.push(createBlockBreakScreen('learning', blockIdx, settings.blocks.learning.count));
-        }
-    }
-    
     // Add test block instructions
     timeline.push(testBlockInstructions);
     
