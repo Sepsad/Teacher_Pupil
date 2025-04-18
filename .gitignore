@@ -16,8 +16,7 @@ resources/.arch-internal-preview.css
 # docker-compose.yml
 .DS_Store
 
-db/check_db.php
-db/config.php
+
 
 images/
 
