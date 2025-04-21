@@ -6,8 +6,7 @@ const taskInstructions = {
     pages: [
         `<div class="instructions">
             <h2>Welcome!</h2>
-            <p>Thank you for participating in this study. We're happy to have you!</p>
-            <p>With your help, we will try to understand how people learn new things and make decisions.</p>
+            <p><strong>This is a demo version of the Teacher-Pupil experiment.</strong></p>
             <p>Let's jump right into it!</p>
         </div>`,
         `<div class="instructions">
@@ -64,7 +63,7 @@ const teachingInstructions = {
     type: jsPsychInstructions,
     pages: [
         `<div class="instructions">
-            <h2>Instructions: Teaching</h2>
+            <h2>Instructions: Teaching (Demo Version)</h2>
             <p>Once you are done playing the game, we will ask you to write down a set of instructions for the next player.</p>
             <p>Unlike you, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
         </div>`,
@@ -89,255 +88,32 @@ const teachingInstructions = {
     show_clickable_nav: true
 };
 
-// Quiz questions
-const quizQuestions = {
+// Create teaching intro screen
+const teachingIntro = {
     type: jsPsychHtmlButtonResponse,
     stimulus: `
         <div class="instructions">
-            <h2>Quiz</h2>
-            <p>Please answer the following questions to confirm you understand the task:</p>
-            
-            <div class="quiz-question">
-                <p>1. Some squares provide better rewards than others.</p>
-                <div class="quiz-options">
-                    <label><input type="radio" name="q1" value="true"> True</label>
-                    <label><input type="radio" name="q1" value="false"> False</label>
-                </div>
-            </div>
-            
-            <div class="quiz-question">
-                <p>2. You will see how many points you obtain from the square you clicked on. You will not see the points of the option you did not pick.</p>
-                <div class="quiz-options">
-                    <label><input type="radio" name="q2" value="true"> True</label>
-                    <label><input type="radio" name="q2" value="false"> False</label>
-                </div>
-            </div>
-            
-            <div class="quiz-question">
-                <p>3. The value of each square remains the same regardless of visual cues.</p>
-                <div class="quiz-options">
-                    <label><input type="radio" name="q3" value="true"> True</label>
-                    <label><input type="radio" name="q3" value="false"> False</label>
-                </div>
-            </div>
+            <h2>Teaching Phase (Demo)</h2>
+            <p>Thank you for going over the game. Now, the time has come for you to explain the game to your pupil, as clear as possible.</p>
         </div>
     `,
-    choices: ["Submit Answers"],
-    data: {
-        answers: {}
-    },
-    on_load: function() {
-        // Add validation before continuing
-        document.querySelector('.jspsych-btn').addEventListener('click', function(e) {
-            const q1 = document.querySelector('input[name="q1"]:checked');
-            const q2 = document.querySelector('input[name="q2"]:checked');
-            const q3 = document.querySelector('input[name="q3"]:checked');
-
-            if (!q1 || !q2 || !q3) {
-                e.preventDefault();
-                alert("Please answer all questions before continuing.");
-                return false;
-            }
-            
-            // Store answers in trial data when validation passes
-            jsPsych.getCurrentTrial().data.answers = {
-                q1: q1.value,
-                q2: q2.value,
-                q3: q3.value
-            };
-        });
-    },
-    on_finish: function(data) {
-        // Use the answers saved during on_load
-        const answers = data.answers;
-        
-        // Save individual answers to data
-        data.q1 = answers.q1;
-        data.q2 = answers.q2;
-        data.q3 = answers.q3;
-        
-        // Check if answers are correct
-        const correctAnswers = {
-            q1: "true",
-            q2: "true", 
-            q3: "false"
-        };
-        
-        data.passed_quiz = (
-            data.q1 === correctAnswers.q1 &&
-            data.q2 === correctAnswers.q2 &&
-            data.q3 === correctAnswers.q3
-        );
-        console.log(data.passed_quiz);
-    }
+    choices: ["Continue"]
 };
 
-// Create a conditional node to check quiz results
-const quizCheck = {
-    timeline: [{
-        type: jsPsychHtmlButtonResponse,
-        stimulus: `
-            <div class="instructions">
-                <h2>Quiz Results</h2>
-                <p>You did not pass the quiz. Please review the instructions again.</p>
-                <p>Pay careful attention to how the value of squares may change based on visual cues.</p>
-            </div>
-        `,
-        choices: ["Review Instructions"]
-    }],
-    conditional_function: function() {
-        // Get the last quiz data
-        const lastQuizData = jsPsych.data.get().last(1).values()[0];
-        // Return true to run the conditional timeline if they failed the quiz
-        return !lastQuizData.passed_quiz;
-    }
-};
-
-// Fix the quiz pass congratulation - make it a regular node, not conditional
-const quizPassCongratulation = {
+// Create teaching detailed instructions
+const teachingDetails = {
     type: jsPsychHtmlButtonResponse,
     stimulus: `
         <div class="instructions">
-            <h2>Fantastic!</h2>
-            <p>You have passed the quiz successfully and understand the main task.</p>
-            <p>Before we begin, we will tell you about your role as a teacher in this game.</p>
+            <h2>Teaching Instructions</h2>
+            <p>Remember, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
+            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same squares.</p>
+            <p>You really want your pupil to succeed! After all, remember your extra bonus depends on their performance.</p>
+            <p>Also remember that a good teaching text is at least 250 characters, but of course you can extend yourself as much as you want. Don't hesitate to share tips, strategies, or any other piece of information that you think will help your pupil.</p>
         </div>
     `,
-    choices: ["Continue to Teaching Instructions"]
+    choices: ["Continue to Write Instructions"]
 };
-
-// Create teaching quiz questions
-const teachingQuizQuestions = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Teaching Quiz</h2>
-            <p>Please answer the following questions to confirm you understand the teaching task:</p>
-            
-            <div class="quiz-question">
-                <p>1. The final bonus payoff depends on the combined choices of you and your pupil.</p>
-                <div class="quiz-options">
-                    <label><input type="radio" name="tq1" value="true"> True</label>
-                    <label><input type="radio" name="tq1" value="false"> False</label>
-                </div>
-            </div>
-            
-            <div class="quiz-question">
-                <p>2. You will need to write a set of instructions and strategies to guide your future pupil. A good lesson must be at least 250 characters long.</p>
-                <div class="quiz-options">
-                    <label><input type="radio" name="tq2" value="true"> True</label>
-                    <label><input type="radio" name="tq2" value="false"> False</label>
-                </div>
-            </div>
-            
-            <div class="quiz-question">
-                <p>3. Your future pupil will see the same symbols as you, with the same rules and same reward points.</p>
-                <div class="quiz-options">
-                    <label><input type="radio" name="tq3" value="true"> True</label>
-                    <label><input type="radio" name="tq3" value="false"> False</label>
-                </div>
-            </div>
-        </div>
-    `,
-    choices: ["Submit Answers"],
-    data: {
-        answers: {}
-    },
-    on_load: function() {
-        // Add validation before continuing
-        document.querySelector('.jspsych-btn').addEventListener('click', function(e) {
-            const q1 = document.querySelector('input[name="tq1"]:checked');
-            const q2 = document.querySelector('input[name="tq2"]:checked');
-            const q3 = document.querySelector('input[name="tq3"]:checked');
-
-            if (!q1 || !q2 || !q3) {
-                e.preventDefault();
-                alert("Please answer all questions before continuing.");
-                return false;
-            }
-            
-            // Store answers in trial data when validation passes
-            jsPsych.getCurrentTrial().data.answers = {
-                q1: q1.value,
-                q2: q2.value,
-                q3: q3.value
-            };
-        });
-    },
-    on_finish: function(data) {
-        // Use the answers saved during on_load
-        const answers = data.answers;
-        
-        // Save individual answers to data
-        data.tq1 = answers.q1;
-        data.tq2 = answers.q2;
-        data.tq3 = answers.q3;
-        
-        // Check if answers are correct
-        const correctAnswers = {
-            q1: "false",
-            q2: "true", 
-            q3: "true"
-        };
-        
-        data.passed_teaching_quiz = (
-            data.tq1 === correctAnswers.q1 &&
-            data.tq2 === correctAnswers.q2 &&
-            data.tq3 === correctAnswers.q3
-        );
-        console.log("Teaching quiz passed:", data.passed_teaching_quiz);
-    }
-};
-
-// Create a conditional node to check teaching quiz results
-const teachingQuizCheck = {
-    timeline: [{
-        type: jsPsychHtmlButtonResponse,
-        stimulus: `
-            <div class="instructions">
-                <h2>You did not pass the teaching quiz.</h2>
-                <h4> Please review the instructions again.</h4>
-                <p>Pay careful attention to how the teaching component works and your role as a teacher.</p>
-            </div>
-        `,
-        choices: ["Review Instructions"]
-    }],
-    conditional_function: function() {
-        // Get the last quiz data
-        const lastQuizData = jsPsych.data.get().last(1).values()[0];
-        // Return true to run the conditional timeline if they failed the quiz
-        return !lastQuizData.passed_teaching_quiz;
-    }
-};
-
-// Teaching quiz pass congratulation
-const teachingQuizPassCongratulation = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Great Job!</h2>
-            <p>You have passed the teaching quiz successfully and understand your role as a teacher.</p>
-            <p>You are now ready to begin the game.</p>
-        </div>
-    `,
-    choices: ["Begin Game"]
-};
-
-// Create final screen
-function createFinalScreen() {
-    return {
-        type: jsPsychHtmlButtonResponse,
-        stimulus: function() {
-            return `
-                <div class="instructions">
-                    <h2>Task Complete!</h2>
-                    <p>Thank you for participating.</p>
-                </div>
-            `;
-        },
-        choices: ["Finish"]
-    };
-}
 
 // Create choice trial
 function createChoiceTrial(trialType, trialIndex, squareOrder) {
@@ -571,33 +347,6 @@ function createTestTrial(trialType, trialIndex, squareOrder) {
     };
 }
 
-// Create teaching intro screen
-const teachingIntro = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Teaching Phase</h2>
-            <p>Thank you for going over the game. Now, the time has come for you to explain the game to your pupil, as clear as possible.</p>
-        </div>
-    `,
-    choices: ["Continue"]
-};
-
-// Create teaching detailed instructions
-const teachingDetails = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Teaching Instructions</h2>
-            <p>Remember, they won't have access to any instructions from us. <strong>ALL INSTRUCTIONS WILL COME FROM YOU</strong>.</p>
-            <p>Keep in mind the game they will play <strong>will be exactly like yours</strong>, with the same rules, same values and even the same squares.</p>
-            <p>You really want your pupil to succeed! After all, remember your extra bonus depends on their performance.</p>
-            <p>Also remember that a good teaching text is at least 250 characters, but of course you can extend yourself as much as you want. Don't hesitate to share tips, strategies, or any other piece of information that you think will help your pupil.</p>
-        </div>
-    `,
-    choices: ["Continue to Write Instructions"]
-};
-
 // Create teaching text entry screen
 const teachingTextEntry = {
     type: jsPsychHtmlButtonResponse,
@@ -747,39 +496,24 @@ function buildTimeline() {
         }
     ];
     
-    // Create a loop for task instructions and quiz
-    const taskInstructionLoop = {
-        timeline: [taskInstructions, quizQuestions, quizCheck],
-        loop_function: function() {
-            // Get the most recent quiz data
-            const lastQuizData = jsPsych.data.get().last(1).values()[0];
-            // If they failed the quiz, repeat the instructions and quiz
-            return !lastQuizData.passed_quiz;
-        }
-    };
+    // Add demo notification
+    // timeline.push({
+    //     type: jsPsychHtmlButtonResponse,
+    //     stimulus: `
+    //         <div class="instructions">
+    //             <h2>DEMO VERSION</h2>
+    //             <p>You are running the demo version of this experiment.</p>
+    //             <p>This version skips the quiz sections and is intended for testing and demonstration purposes only.</p>
+    //         </div>
+    //     `,
+    //     choices: ["Continue to Instructions"]
+    // });
     
-    // Add the task instruction loop to the timeline
-    timeline.push(taskInstructionLoop);
+    // Add the task instructions (no quiz)
+    timeline.push(taskInstructions);
     
-    // Add task quiz congratulation message
-    timeline.push(quizPassCongratulation);
-    
-    // Create a loop for teaching instructions and quiz
-    const teachingInstructionLoop = {
-        timeline: [teachingInstructions, teachingQuizQuestions, teachingQuizCheck],
-        loop_function: function() {
-            // Get the most recent quiz data
-            const lastQuizData = jsPsych.data.get().last(1).values()[0];
-            // If they failed the quiz, repeat the instructions and quiz
-            return !lastQuizData.passed_teaching_quiz;
-        }
-    };
-    
-    // Add the teaching instruction loop to the timeline
-    timeline.push(teachingInstructionLoop);
-    
-    // Add teaching quiz congratulation message
-    timeline.push(teachingQuizPassCongratulation);
+    // Add teaching instructions (no quiz)
+    timeline.push(teachingInstructions);
 
     // Add learning blocks
     for (let blockIdx = 0; blockIdx < settings.blocks.learning.count; blockIdx++) {
@@ -891,7 +625,19 @@ function buildTimeline() {
     timeline.push(teachingTextEntry);
 
     // Add final results
-    timeline.push(createFinalScreen());
+    timeline.push({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: function() {
+            return `
+                <div class="instructions">
+                    <h2>Demo Complete!</h2>
+                    <p>Thank you for participating in this demo.</p>
+                    <p>You earned a total of ${settings.totalReward} points.</p>
+                </div>
+            `;
+        },
+        choices: ["Finish Demo"]
+    });
     
     return timeline;
 }
