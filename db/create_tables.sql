@@ -2,8 +2,8 @@
 CREATE DATABASE IF NOT EXISTS teacher_pupil_db;
 USE teacher_pupil_db;
 
--- Create participants table with status tracking
-CREATE TABLE IF NOT EXISTS SS_participants_TEACH (
+-- Create participants table with status tracking (pupils-only)
+CREATE TABLE IF NOT EXISTS SS_participants_Pupil (
     id INT AUTO_INCREMENT PRIMARY KEY,
     prolific_id VARCHAR(255) NOT NULL,
     first_visit_time DATETIME NOT NULL,
@@ -11,11 +11,26 @@ CREATE TABLE IF NOT EXISTS SS_participants_TEACH (
     status ENUM('started', 'completed', 'abandoned') DEFAULT 'started',
     total_score INT DEFAULT 0,
     browser_info TEXT,
+    teacher_text_id INT,  -- Reference to the teaching text used from SS_teaching_texts_TEACH
+    teacher_participant_id INT, -- Reference to the original teacher from SS_participants_TEACH
     UNIQUE KEY (prolific_id)
 );
 
--- Updated trials table with all the required columns
-CREATE TABLE IF NOT EXISTS SS_trials_TEACH (
+-- Create reference to original teacher tables which already exist
+-- These are commented out since they should already exist
+-- CREATE TABLE IF NOT EXISTS SS_participants_TEACH (
+--    id INT AUTO_INCREMENT PRIMARY KEY,
+--    prolific_id VARCHAR(255) NOT NULL,
+--    first_visit_time DATETIME NOT NULL,
+--    date_completed DATETIME NULL,
+--    status ENUM('started', 'completed', 'abandoned') DEFAULT 'started',
+--    total_score INT DEFAULT 0,
+--    browser_info TEXT,
+--    UNIQUE KEY (prolific_id)
+-- );
+
+-- Updated trials table - note NO teaching_text field needed for pupil-submitted teaching
+CREATE TABLE IF NOT EXISTS SS_trials_Pupil (
     id INT AUTO_INCREMENT PRIMARY KEY,
     participant_id INT NOT NULL,
     trial_index INT NOT NULL,
@@ -71,52 +86,51 @@ CREATE TABLE IF NOT EXISTS SS_trials_TEACH (
     phase VARCHAR(20),
     reward_probability FLOAT,
     square_order TEXT,
-    teaching_text TEXT,
     
     -- Complete trial data in JSON format
     trial_data JSON NOT NULL,
     
-    FOREIGN KEY (participant_id) REFERENCES SS_participants_TEACH(id),
+    FOREIGN KEY (participant_id) REFERENCES SS_participants_Pupil(id),
     INDEX idx_task (task),
     INDEX idx_trial_type (trial_type_id),
     INDEX idx_block_type (block_type)
 );
 
--- Teaching texts table with additional metadata
-CREATE TABLE IF NOT EXISTS SS_teaching_texts_TEACH (
+-- Teaching texts table - imported from teachers, no new teaching_text created by pupils
+CREATE TABLE IF NOT EXISTS SS_teaching_texts_Pupil (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    participant_id INT NOT NULL,
+    teacher_id INT NOT NULL,
     teaching_text TEXT NOT NULL,
     character_count INT,
     color_pair VARCHAR(100),
-    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (participant_id) REFERENCES SS_participants_TEACH(id)
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create table for storing CSV experiment data
-CREATE TABLE IF NOT EXISTS SS_experiment_data_TEACH (
+-- Create table for storing experiment data
+CREATE TABLE IF NOT EXISTS SS_experiment_data_Pupil (
     id INT AUTO_INCREMENT PRIMARY KEY,
     participant_id INT NOT NULL,
     csv_data MEDIUMTEXT NOT NULL,
     submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (participant_id) REFERENCES SS_participants_TEACH(id)
+    FOREIGN KEY (participant_id) REFERENCES SS_participants_Pupil(id)
 );
 
 -- Create a view for easy retrieval of aggregate data
--- CREATE VIEW participant_performance AS
--- SELECT 
---     p.prolific_id,
---     p.date_completed,
---     COUNT(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN 1 END) as total_trials,
---     AVG(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.accuracy END) as avg_accuracy,
---     SUM(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.reward END) as total_reward,
---     tt.character_count as teaching_length,
---     tt.teaching_text
--- FROM 
---     SS_participants_TEACH p
--- LEFT JOIN 
---     SS_trials_TEACH t ON p.id = t.participant_id
--- LEFT JOIN 
---     SS_teaching_texts_TEACH tt ON p.id = tt.participant_id
--- GROUP BY 
---     p.id;
+CREATE VIEW participant_performance_Pupil AS
+SELECT 
+    p.prolific_id,
+    p.date_completed,
+    COUNT(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN 1 END) as total_trials,
+    AVG(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.accuracy END) as avg_accuracy,
+    SUM(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.reward END) as total_reward,
+    p.teacher_text_id,
+    p.teacher_participant_id,
+    tt.teaching_text
+FROM 
+    SS_participants_Pupil p
+LEFT JOIN 
+    SS_trials_Pupil t ON p.id = t.participant_id
+LEFT JOIN
+    SS_teaching_texts_TEACH tt ON p.teacher_text_id = tt.id
+GROUP BY 
+    p.id;

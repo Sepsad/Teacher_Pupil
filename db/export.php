@@ -28,6 +28,11 @@ switch ($type) {
         header('Content-Disposition: attachment; filename="teaching_texts_' . date('Y-m-d') . '.csv"');
         break;
         
+    case 'csv_pupil':
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="pupil_data_' . date('Y-m-d') . '.csv"');
+        break;
+        
     default:
         die("Invalid export type");
 }
@@ -168,6 +173,53 @@ try {
                     $row['teaching_text'],
                     $row['color_pair']
                 ];
+            }
+            
+            exportAsCSV($data, $headers);
+            break;
+            
+        case 'csv_pupil':
+            // Get all participants and their trial data for pupils
+            $sql = "SELECT p.prolific_id, p.date_completed, t.trial_data 
+                   FROM SS_participants_Pupil p 
+                   JOIN SS_trials_Pupil t ON p.id = t.participant_id";
+            $result = mysqli_query($conn, $sql);
+            
+            if (!$result) {
+                throw new Exception(mysqli_error($conn));
+            }
+            
+            $data = [];
+            // Include all fields from DATA-DICT
+            $headers = [
+                'prolific_id', 'date_completed', 'trial_index', 'condition_trial_index', 
+                'task', 'trial_type_id', 'block_type', 'square_order', 'pair_id',
+                'rewarding_option', 'reward_probability', 'response', 'chosen_option',
+                'unchosen_option', 'chosen_color', 'unchosen_color', 'chosen_reward_probability',
+                'unchosen_reward_probability', 'chosen_reward_points', 'unchosen_reward_points',
+                'reward', 'total_reward', 'rt', 'accuracy', 'color_left', 'color_right',
+                'color_mapping', 'teaching_text'
+            ];
+            
+            while ($row = mysqli_fetch_assoc($result)) {
+                $trialData = json_decode($row['trial_data'], true);
+                $flatTrials = flattenTrialData($trialData);
+                
+                foreach ($flatTrials as $trial) {
+                    $csvRow = [
+                        'prolific_id' => $row['prolific_id'],
+                        'date_completed' => $row['date_completed']
+                    ];
+                    
+                    // Add trial data fields
+                    foreach ($headers as $header) {
+                        if ($header !== 'prolific_id' && $header !== 'date_completed') {
+                            $csvRow[$header] = isset($trial[$header]) ? $trial[$header] : '';
+                        }
+                    }
+                    
+                    $data[] = $csvRow;
+                }
             }
             
             exportAsCSV($data, $headers);
