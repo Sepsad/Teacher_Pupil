@@ -105,22 +105,22 @@ CREATE TABLE IF NOT EXISTS SS_experiment_data_Pupil (
     FOREIGN KEY (participant_id) REFERENCES SS_participants_Pupil(id)
 );
 
--- Create a view for easy retrieval of aggregate data
-CREATE VIEW participant_performance_Pupil AS
-SELECT 
-    p.prolific_id,
-    p.date_completed,
-    COUNT(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN 1 END) as total_trials,
-    AVG(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.accuracy END) as avg_accuracy,
-    SUM(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.reward END) as total_reward,
-    p.teacher_text_id,
-    p.teacher_participant_id,
-    tt.teaching_text
-FROM 
-    SS_participants_Pupil p
-LEFT JOIN 
-    SS_trials_Pupil t ON p.id = t.participant_id
-LEFT JOIN
-    SS_teaching_texts_TEACH tt ON p.teacher_text_id = tt.id
-GROUP BY 
-    p.id;
+-- -- Create a view for easy retrieval of aggregate data
+-- CREATE VIEW participant_performance_Pupil AS
+-- SELECT 
+--     p.prolific_id,
+--     p.date_completed,
+--     COUNT(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN 1 END) as total_trials,
+--     AVG(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.accuracy END) as avg_accuracy,
+--     SUM(CASE WHEN t.task = 'choice' OR t.task = 'test' THEN t.reward END) as total_reward,
+--     p.teacher_text_id,
+--     p.teacher_participant_id,
+--     tt.teaching_text
+-- FROM 
+--     SS_participants_Pupil p
+-- LEFT JOIN 
+--     SS_trials_Pupil t ON p.id = t.participant_id
+-- LEFT JOIN
+--     SS_teaching_texts_TEACH tt ON p.teacher_text_id = tt.id
+-- GROUP BY 
+--     p.id;

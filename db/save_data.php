@@ -59,7 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $prolific_id = isset($data['prolific_id']) ? mysqli_real_escape_string($conn, $data['prolific_id']) : '';
         $experiment_data_json = isset($data['experiment_data']) ? $data['experiment_data'] : '';
         $browser_info = isset($data['browser_info']) ? mysqli_real_escape_string($conn, json_encode($data['browser_info'])) : '';
-        $is_pupil = isset($data['is_pupil']) ? (bool)$data['is_pupil'] : false;
+        
+        // Assume pupil by default for this version, since it's the pupil-only version
+        $is_pupil = true;
         
         log_debug('Processing JSON data for ' . ($is_pupil ? 'pupil' : 'teacher') . ' participant: ' . $prolific_id);
         
@@ -80,39 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         log_debug('Parsed ' . count($parsed_trials) . ' trials from JSON');
         
-        // Required columns from the user's list
-        $required_columns = [
-            'success', 'timeout', 'failed_images', 'failed_audio', 'failed_video', 
-            'trial_type', 'trial_index', 'time_elapsed', 'internal_node_id', 
-            'view_history', 'rt', 'stimulus', 'response', 'answers', 'q1', 'q2', 
-            'q3', 'passed_quiz', 'tq1', 'tq2', 'tq3', 'passed_teaching_quiz', 'task', 
-            'square_order', 'trial_type_id', 'rewarding_option', 'reward_probability', 
-            'block_type', 'chosen_option', 'unchosen_option', 'condition_trial_index', 
-            'chosen_color', 'unchosen_color', 'pair_id', 'chosen_reward_probability', 
-            'unchosen_reward_probability', 'chosen_reward_points', 'unchosen_reward_points', 
-            'reward', 'total_reward', 'accuracy', 'color_left', 'color_right', 
-            'color_mapping', 'phase', 'teaching_text'
-        ];
-        
-        // Calculate total score from trials and find teaching text and color pair
+        // Calculate total score from trials
         $total_score = 0;
-        $teaching_text = '';
-        $teaching_char_count = 0;
         $color_pair = '';
         
         foreach ($parsed_trials as $trial) {
             // Calculate total score
             if (isset($trial['reward']) && is_numeric($trial['reward'])) {
                 $total_score += (int)$trial['reward'];
-            }
-            
-            // Extract teaching text if available
-            if ((isset($trial['task']) && $trial['task'] === 'teaching_text' && isset($trial['teaching_text'])) || 
-                (isset($trial['teaching_text']) && !empty($trial['teaching_text']))) {
-                if (isset($trial['teaching_text']) && !empty($trial['teaching_text'])) {
-                    $teaching_text = $trial['teaching_text'];
-                    $teaching_char_count = strlen($teaching_text);
-                }
             }
             
             // Extract color pair information from any trial with color_mapping
@@ -131,158 +108,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         log_debug('Starting transaction');
         mysqli_begin_transaction($conn);
         
-        if ($is_pupil) {
-            // Handle pupil participant data saving
-            // Check if this prolific_id already exists in PUPIL table
-            $check_sql = "SELECT id FROM SS_participants_Pupil WHERE prolific_id = ?";
-            $check_stmt = mysqli_prepare($conn, $check_sql);
-            
-            if (!$check_stmt) {
-                throw new Exception('Prepare statement failed: ' . mysqli_error($conn));
-            }
-            
-            mysqli_stmt_bind_param($check_stmt, "s", $prolific_id);
-            
-            if (!mysqli_stmt_execute($check_stmt)) {
-                throw new Exception('Check participant query failed: ' . mysqli_stmt_error($check_stmt));
-            }
-            
-            mysqli_stmt_store_result($check_stmt);
-            $participant_exists = mysqli_stmt_num_rows($check_stmt) > 0;
-            log_debug('Pupil participant exists: ' . ($participant_exists ? 'yes' : 'no'));
-            mysqli_stmt_close($check_stmt);
-            
-            // Insert or update pupil participant record
-            if ($participant_exists) {
-                // Update existing pupil participant record
-                $update_sql = "UPDATE SS_participants_Pupil SET 
-                              date_completed = NOW(), 
-                              status = 'completed', 
-                              total_score = ?, 
-                              browser_info = COALESCE(NULLIF(?, ''), browser_info)
-                              WHERE prolific_id = ?";
-                $update_stmt = mysqli_prepare($conn, $update_sql);
-                mysqli_stmt_bind_param($update_stmt, "iss", $total_score, $browser_info, $prolific_id);
-                
-                if (!mysqli_stmt_execute($update_stmt)) {
-                    throw new Exception('Error updating pupil participant data: ' . mysqli_error($conn));
-                }
-                mysqli_stmt_close($update_stmt);
-                
-                // Get the participant_db_id for foreign key references
-                $id_sql = "SELECT id FROM SS_participants_Pupil WHERE prolific_id = ?";
-                $id_stmt = mysqli_prepare($conn, $id_sql);
-                mysqli_stmt_bind_param($id_stmt, "s", $prolific_id);
-                mysqli_stmt_execute($id_stmt);
-                mysqli_stmt_bind_result($id_stmt, $participant_db_id);
-                mysqli_stmt_fetch($id_stmt);
-                mysqli_stmt_close($id_stmt);
-            } else {
-                // Should not happen as pupil should be logged first, but handle it just in case
-                throw new Exception('Pupil participant not found, must log visit first');
-            }
-            
-            // Save the JSON data to experiment_data table
-            $json_sql = "INSERT INTO SS_experiment_data_Pupil (participant_id, csv_data) VALUES (?, ?)";
-            $json_stmt = mysqli_prepare($conn, $json_sql);
-            mysqli_stmt_bind_param($json_stmt, "is", $participant_db_id, $experiment_data_json);
-            
-            if (!mysqli_stmt_execute($json_stmt)) {
-                log_debug('Error saving JSON data for pupil: ' . mysqli_error($conn));
-                // Don't throw exception, continue with individual trial data
-            }
-            mysqli_stmt_close($json_stmt);
-            
-            // The rest of the code to save individual trials can use the existing functionality
-            // Just change the table name for pupil trials if needed
-        } else {
-            // Existing code for teacher participant
-            // Check if this prolific_id already exists
-            $check_sql = "SELECT id FROM SS_participants_TEACH WHERE prolific_id = ?";
-            $check_stmt = mysqli_prepare($conn, $check_sql);
-            
-            if (!$check_stmt) {
-                throw new Exception('Prepare statement failed: ' . mysqli_error($conn));
-            }
-            
-            mysqli_stmt_bind_param($check_stmt, "s", $prolific_id);
-            
-            if (!mysqli_stmt_execute($check_stmt)) {
-                throw new Exception('Check participant query failed: ' . mysqli_stmt_error($check_stmt));
-            }
-            
-            mysqli_stmt_store_result($check_stmt);
-            $participant_exists = mysqli_stmt_num_rows($check_stmt) > 0;
-            log_debug('Participant exists: ' . ($participant_exists ? 'yes' : 'no'));
-            mysqli_stmt_close($check_stmt);
-            
-            // Insert or update participant record
-            if ($participant_exists) {
-                // Update existing participant record
-                $update_sql = "UPDATE SS_participants_TEACH SET 
-                              date_completed = NOW(), 
-                              status = 'completed', 
-                              total_score = ?, 
-                              browser_info = COALESCE(NULLIF(?, ''), browser_info)
-                              WHERE prolific_id = ?";
-                $update_stmt = mysqli_prepare($conn, $update_sql);
-                mysqli_stmt_bind_param($update_stmt, "iss", $total_score, $browser_info, $prolific_id);
-                
-                if (!mysqli_stmt_execute($update_stmt)) {
-                    throw new Exception('Error updating participant data: ' . mysqli_error($conn));
-                }
-                mysqli_stmt_close($update_stmt);
-                
-                // Get the participant_db_id for foreign key references
-                $id_sql = "SELECT id FROM SS_participants_TEACH WHERE prolific_id = ?";
-                $id_stmt = mysqli_prepare($conn, $id_sql);
-                mysqli_stmt_bind_param($id_stmt, "s", $prolific_id);
-                mysqli_stmt_execute($id_stmt);
-                mysqli_stmt_bind_result($id_stmt, $participant_db_id);
-                mysqli_stmt_fetch($id_stmt);
-                mysqli_stmt_close($id_stmt);
-            } else {
-                // Insert new participant record
-                $insert_sql = "INSERT INTO SS_participants_TEACH (prolific_id, first_visit_time, date_completed, status, total_score, browser_info) 
-                              VALUES (?, NOW(), NOW(), 'completed', ?, ?)";
-                $insert_stmt = mysqli_prepare($conn, $insert_sql);
-                mysqli_stmt_bind_param($insert_stmt, "sis", $prolific_id, $total_score, $browser_info);
-                
-                if (!mysqli_stmt_execute($insert_stmt)) {
-                    throw new Exception('Error inserting participant data: ' . mysqli_error($conn));
-                }
-                
-                $participant_db_id = mysqli_insert_id($conn);
-                mysqli_stmt_close($insert_stmt);
-            }
-            
-            // Save the JSON data to experiment_data table
-            $json_sql = "INSERT INTO SS_experiment_data_TEACH (participant_id, csv_data) VALUES (?, ?)";
-            $json_stmt = mysqli_prepare($conn, $json_sql);
-            mysqli_stmt_bind_param($json_stmt, "is", $participant_db_id, $experiment_data_json);
-            
-            if (!mysqli_stmt_execute($json_stmt)) {
-                log_debug('Error saving JSON data: ' . mysqli_error($conn));
-                // Don't throw exception, continue with individual trial data
-            }
-            mysqli_stmt_close($json_stmt);
-            
-            // Save teaching text separately to the teaching_texts table if it exists
-            if (!empty($teaching_text)) {
-                $teaching_sql = "INSERT INTO SS_teaching_texts_TEACH (participant_id, teaching_text, character_count, color_pair) VALUES (?, ?, ?, ?)";
-                $teaching_stmt = mysqli_prepare($conn, $teaching_sql);
-                mysqli_stmt_bind_param($teaching_stmt, "isis", $participant_db_id, $teaching_text, $teaching_char_count, $color_pair);
-                
-                if (!mysqli_stmt_execute($teaching_stmt)) {
-                    log_debug('Error saving teaching text: ' . mysqli_stmt_error($teaching_stmt));
-                } else {
-                    log_debug('Teaching text saved successfully with color pair');
-                }
-                mysqli_stmt_close($teaching_stmt);
-            }
+        // Check if this prolific_id already exists in PUPIL table
+        $check_sql = "SELECT id FROM SS_participants_Pupil WHERE prolific_id = ?";
+        $check_stmt = mysqli_prepare($conn, $check_sql);
+        
+        if (!$check_stmt) {
+            throw new Exception('Prepare statement failed: ' . mysqli_error($conn));
         }
         
+        mysqli_stmt_bind_param($check_stmt, "s", $prolific_id);
+        
+        if (!mysqli_stmt_execute($check_stmt)) {
+            throw new Exception('Check participant query failed: ' . mysqli_stmt_error($check_stmt));
+        }
+        
+        mysqli_stmt_store_result($check_stmt);
+        $participant_exists = mysqli_stmt_num_rows($check_stmt) > 0;
+        log_debug('Pupil participant exists: ' . ($participant_exists ? 'yes' : 'no'));
+        mysqli_stmt_close($check_stmt);
+        
+        // Insert or update pupil participant record
+        if ($participant_exists) {
+            // Update existing pupil participant record
+            $update_sql = "UPDATE SS_participants_Pupil SET 
+                          date_completed = NOW(), 
+                          status = 'completed', 
+                          total_score = ?, 
+                          browser_info = COALESCE(NULLIF(?, ''), browser_info)
+                          WHERE prolific_id = ?";
+            $update_stmt = mysqli_prepare($conn, $update_sql);
+            mysqli_stmt_bind_param($update_stmt, "iss", $total_score, $browser_info, $prolific_id);
+            
+            if (!mysqli_stmt_execute($update_stmt)) {
+                throw new Exception('Error updating pupil participant data: ' . mysqli_error($conn));
+            }
+            mysqli_stmt_close($update_stmt);
+            
+            // Get the participant_db_id for foreign key references
+            $id_sql = "SELECT id FROM SS_participants_Pupil WHERE prolific_id = ?";
+            $id_stmt = mysqli_prepare($conn, $id_sql);
+            mysqli_stmt_bind_param($id_stmt, "s", $prolific_id);
+            mysqli_stmt_execute($id_stmt);
+            mysqli_stmt_bind_result($id_stmt, $participant_db_id);
+            mysqli_stmt_fetch($id_stmt);
+            mysqli_stmt_close($id_stmt);
+        } else {
+            // Should not happen as pupil should be logged first, but handle it just in case
+            throw new Exception('Pupil participant not found, must log visit first');
+        }
+        
+        // Save the JSON data to experiment_data table
+        $json_sql = "INSERT INTO SS_experiment_data_Pupil (participant_id, csv_data) VALUES (?, ?)";
+        $json_stmt = mysqli_prepare($conn, $json_sql);
+        mysqli_stmt_bind_param($json_stmt, "is", $participant_db_id, $experiment_data_json);
+        
+        if (!mysqli_stmt_execute($json_stmt)) {
+            log_debug('Error saving JSON data for pupil: ' . mysqli_error($conn));
+            // Don't throw exception, continue with individual trial data
+        }
+        mysqli_stmt_close($json_stmt);
+        
         // Dynamically construct the SQL statement for inserting trials with all columns
+        // Note: Using SS_trials_Pupil instead of SS_trials_TEACH for pupil data
         $trial_columns = [
             "participant_id", "trial_index", "condition_trial_index", "task", 
             "trial_type_id", "block_type", "rewarding_option", "response", 
@@ -299,8 +186,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Create placeholders for the SQL statement
         $placeholders = array_fill(0, count($trial_columns), "?");
         
-        // Construct the SQL statement
-        $trial_insert_sql = "INSERT INTO SS_trials_TEACH (" . implode(", ", $trial_columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
+        // Construct the SQL statement with correct table name for pupil
+        $trial_insert_sql = "INSERT INTO SS_trials_Pupil (" . implode(", ", $trial_columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
         
         $trial_stmt = mysqli_prepare($conn, $trial_insert_sql);
         
@@ -367,24 +254,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "phase" => ["s", null],
                 "reward_probability" => ["d", null],
                 "square_order" => ["s", null],
-                "teaching_text" => ["s", null],
                 "trial_data" => ["s", "{}"] // Default to empty JSON object
             ];
             
-            // Extract values from the trial data
-            foreach ($column_types as $column => $type_info) {
-                $type = $type_info[0];
-                $default = $type_info[1];
+            // First add participant_id
+            $param_types .= "i";
+            $params[] = $participant_db_id;
+            
+            // Then add all other parameters
+            foreach ($trial_columns as $column) {
+                // Skip participant_id as we already added it
+                if ($column === "participant_id") continue;
                 
-                if ($column === "participant_id") {
-                    // Special case: always use participant_db_id for participant_id
-                    $param_types .= $type;
-                    $params[] = $participant_db_id;
-                } else if ($column === "trial_data") {
+                if ($column === "trial_data") {
                     // Special case: serialize the entire trial as JSON
-                    $param_types .= $type;
+                    $param_types .= "s";
                     $params[] = json_encode($trial);
                 } else {
+                    // Get the data type for this column
+                    $type = isset($column_types[$column]) ? $column_types[$column][0] : "s";
+                    $default = isset($column_types[$column]) ? $column_types[$column][1] : null;
+                    
                     $param_types .= $type;
                     
                     // Handle various data formats
@@ -443,20 +333,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         mysqli_stmt_close($trial_stmt);
         log_debug('Inserted ' . $inserted_count . ' trials into database');
-        
-        // Save teaching text separately to the teaching_texts table if it exists
-        if (!empty($teaching_text)) {
-            $teaching_sql = "INSERT INTO SS_teaching_texts_TEACH (participant_id, teaching_text, character_count, color_pair) VALUES (?, ?, ?, ?)";
-            $teaching_stmt = mysqli_prepare($conn, $teaching_sql);
-            mysqli_stmt_bind_param($teaching_stmt, "isis", $participant_db_id, $teaching_text, $teaching_char_count, $color_pair);
-            
-            if (!mysqli_stmt_execute($teaching_stmt)) {
-                log_debug('Error saving teaching text: ' . mysqli_stmt_error($teaching_stmt));
-            } else {
-                log_debug('Teaching text saved successfully with color pair');
-            }
-            mysqli_stmt_close($teaching_stmt);
-        }
         
         // Commit transaction
         mysqli_commit($conn);
