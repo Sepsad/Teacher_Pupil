@@ -181,29 +181,226 @@ const teachingInstructions = {
     show_clickable_nav: true
 };
 
+// Default teaching instructions as fallback
+const defaultTeachingInstructions = [
+    "Pay attention to the background of the squares. The plain background and hatched background with triangle follow the same rule, while the hatched background follows a different rule.",
+    "For plain backgrounds, always choose the second color. For hatched backgrounds, always choose the first color. For hatched backgrounds with a triangle, choose the second color again.",
+    "The background matters more than the colors themselves. Look for patterns in which option gives rewards based on the background type."
+];
+
 //DISPLAY TEACHER INSTRUCTIONS HERE. 
 const displayTeacherInstr = {
     type: jsPsychInstructions,
-    pages: [
-        `<div class="instructions">
-            <h2>Teacher instructions </h2>
-            <p>HERE</b>. </p>
-        </div>`
-    ],
-    show_clickable_nav: true
+    pages: [`<div class="instructions">
+        <h2>Teacher instructions</h2>
+        <p>Loading instructions from a previous participant...</p>
+        <div class="loader"></div>
+    </div>`],
+    show_clickable_nav: true,
+    allow_backward: false,
+    button_label_next: "Continue",
+
+    on_start: function(trial) {
+        console.log('[displayTeacherInstr] Starting component and fetching instructions');
+        
+        // Fetch teaching text from server
+        fetch('db/get_teaching.php')
+            .then(response => {
+                console.log('[displayTeacherInstr] Server response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('[displayTeacherInstr] Teaching data received:', data);
+                let teachingText = 'No instructions available.';
+                
+                if (data.success && data.teaching_text) {
+                    console.log('[displayTeacherInstr] Using teaching text from database');
+                    teachingText = data.teaching_text;
+                } else if (data.teaching_text) {
+                    console.log('[displayTeacherInstr] Using fallback teaching text from response');
+                    teachingText = data.teaching_text;
+                } else {
+                    // Use a random default instruction if none available from database
+                    const randomIndex = Math.floor(Math.random() * defaultTeachingInstructions.length);
+                    teachingText = defaultTeachingInstructions[randomIndex];
+                    console.log('[displayTeacherInstr] Using random default teaching text:', randomIndex);
+                }
+                
+                // Format the teaching text with proper styling
+                const newContent = `<div class="instructions">
+                    <h2>Teacher Instructions</h2>
+                    <p>A previous participant who mastered this task left these instructions to help you:</p>
+                    
+                    <div class="teacher-message" style="background-color: #f5f5f5; border: 2px solid #3498db; padding: 20px; margin: 20px auto; border-radius: 8px; text-align: left; max-width: 400px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; overflow-x: hidden;">
+                        <p style="white-space: normal; margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: break-word; hyphens: auto;">${teachingText}</p>
+                    </div>
+                </div>`;
+                
+                // Replace the current page with the teaching instructions
+                trial.pages = [newContent];
+                
+                // Try all possible selectors to find the content area
+                const targetElement = document.querySelector('#jspsych-target') || document.querySelector('.jspsych-display-element');
+                if (targetElement) {
+                    console.log('[displayTeacherInstr] Found display element, updating content');
+                    
+                    // Try multiple potential selectors for the actual content area
+                    const potentialSelectors = [
+                        '.jspsych-instructions-page', 
+                        '.jspsych-content div:not(.jspsych-instructions-nav)',
+                        '.jspsych-content > div',
+                        '#jspsych-instructions-page-0'
+                    ];
+                    
+                    let contentFound = false;
+                    
+                    // Try direct DOM traversal to find the content area
+                    const contentElements = targetElement.querySelectorAll('.jspsych-content > *');
+                    for (const element of contentElements) {
+                        if (element.classList && !element.classList.contains('jspsych-instructions-nav')) {
+                            console.log('[displayTeacherInstr] Found content via DOM traversal');
+                            element.innerHTML = newContent;
+                            contentFound = true;
+                            break;
+                        }
+                    }
+                    
+                    // If not found via traversal, try the selectors
+                    if (!contentFound) {
+                        for (const selector of potentialSelectors) {
+                            const element = targetElement.querySelector(selector);
+                            if (element) {
+                                console.log('[displayTeacherInstr] Found content with selector:', selector);
+                                element.innerHTML = newContent;
+                                contentFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Last resort - find any element that contains the loader
+                    if (!contentFound) {
+                        const loaderElement = targetElement.querySelector('.loader');
+                        if (loaderElement) {
+                            console.log('[displayTeacherInstr] Found content via loader');
+                            // Go up to find the container of the loader
+                            let container = loaderElement.parentElement;
+                            while (container && container !== targetElement) {
+                                if (container.classList.contains('instructions') || 
+                                    !container.className.includes('jspsych')) {
+                                    container.innerHTML = newContent;
+                                    contentFound = true;
+                                    break;
+                                }
+                                container = container.parentElement;
+                            }
+                        }
+                    }
+                    
+                    if (contentFound) {
+                        console.log('[displayTeacherInstr] Successfully updated instructions content');
+                    } else {
+                        console.warn('[displayTeacherInstr] Content area not found using any selector method');
+                        
+                        // Store the content for later use
+                        window.teacherInstructions = newContent;
+                    }
+                } else {
+                    console.warn('[displayTeacherInstr] Display element not found');
+                    // Store for later
+                    window.teacherInstructions = newContent;
+                }
+            })
+            .catch(error => {
+                console.error('[displayTeacherInstr] Error fetching teaching instructions:', error);
+                // Use a random default instruction if fetch fails
+                const randomIndex = Math.floor(Math.random() * defaultTeachingInstructions.length);
+                const teachingText = defaultTeachingInstructions[randomIndex];
+                console.log('[displayTeacherInstr] Error occurred, using random default teaching text:', randomIndex);
+                
+                const newContent = `<div class="instructions">
+                    <h2>Teacher Instructions</h2>
+                    <p>A previous participant who mastered this task left these instructions to help you:</p>
+                    
+                    <div class="teacher-message" style="background-color: #f5f5f5; border: 2px solid #3498db; padding: 20px; margin: 20px auto; border-radius: 8px; text-align: left; max-width: 400px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; overflow-x: hidden;">
+                        <p style="white-space: normal; margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: break-word; hyphens: auto;">${teachingText}</p>
+                    </div>
+                </div>`;
+                
+                // Update the pages property
+                trial.pages = [newContent];
+            });
+    },
+    on_load: function() {
+        console.log('[displayTeacherInstr] Component loaded and visible');
+        
+        // Check if we have stored instructions content from fetch before DOM was ready
+        if (window.teacherInstructions) {
+            console.log('[displayTeacherInstr] Found stored instructions, applying now that DOM is ready');
+            
+            // Find the instruction page element now that it's definitely in the DOM
+            const contentElement = document.querySelector('.jspsych-instructions-page') || 
+                                   document.querySelector('.jspsych-content > div:not(.jspsych-instructions-nav)');
+            
+            if (contentElement) {
+                contentElement.innerHTML = window.teacherInstructions;
+                console.log('[displayTeacherInstr] Successfully applied stored instructions');
+            }
+        }
+        
+        // Add a check after a delay to make sure content loaded
+        setTimeout(() => {
+            const anyContentArea = document.querySelector('.jspsych-content > div:not(.jspsych-instructions-nav)');
+            if (anyContentArea) {
+                const loadingElement = anyContentArea.querySelector('.loader');
+                if (loadingElement) {
+                    console.log('[displayTeacherInstr] Instructions still loading after timeout');
+                    
+                    // If we still have a loader, but have stored teacher instructions, apply them now
+                    if (window.teacherInstructions) {
+                        anyContentArea.innerHTML = window.teacherInstructions;
+                        console.log('[displayTeacherInstr] Applied stored instructions after timeout');
+                    }
+                } else {
+                    console.log('[displayTeacherInstr] Instructions successfully loaded and displayed');
+                }
+            }
+        }, 2000);
+    }
 };
 
-
-// Launch experiment
-const teachingCheckInstructionsAndStart = { //PARTICIPANTS SHOULD BE ABLE TO GO BACK AND READ THE INSTRUCTIONS AGAIN IF THEY WANT TO
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-        <div class="instructions">
-            <h2>Are you ready?</h2>
-            <p>You can now decide wether you want to read the instructions again, or start the game.</p>
-        </div>
-    `,
-    choices: ["Read Instructions Again","Begin Game"] //ADD CHOICE TO GO BACK PLEASE (see slide 10 of Teacher/Pupil task - Pupil ppt that we made when discussing the task)
+// Create an instruction review loop to handle going back to instructions
+const instructionReviewLoop = {
+    timeline: [
+        displayTeacherInstr,  // Show teacher instructions
+        {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: `
+                <div class="instructions">
+                    <h2>Are you ready?</h2>
+                    <p>You can now decide whether you want to read the instructions again, or start the game.</p>
+                </div>
+            `,
+            choices: ["Read Instructions Again", "Begin Game"],
+            data: {
+                task: 'instruction_choice'
+            },
+            on_finish: function(data) {
+                console.log('Instruction choice made:', data.response === 0 ? 'Read Again' : 'Begin Game');
+            }
+        }
+    ],
+    loop_function: function(data) {
+        // Get the most recent response
+        const lastTrialData = data.values().slice(-1)[0];
+        const shouldLoop = lastTrialData.response === 0;
+        console.log('instructionReviewLoop decision:', shouldLoop ? 'Looping back to instructions' : 'Proceeding to game');
+        // If they chose "Read Instructions Again" (option 0), loop again
+        return shouldLoop;
+    }
 };
 
 // Create final screen
@@ -377,17 +574,14 @@ function buildTimeline() {
     // Add consent form
     timeline.push(consentForm);
 
-    // Add task bare-boned instructions for pupil
+    // Add task instructions for pupil
     timeline.push(taskInstructions);
     
     // Add intro to teacher instructions 
     timeline.push(teachingInstructions);
 
-    // Add TEACHER instructions (we will probably need a loop here)
-    timeline.push(displayTeacherInstr);
-
-    // Add TEACHER instructions go back path (we will probably need a loop here)
-    timeline.push(teachingCheckInstructionsAndStart);
+    // Add instruction review loop
+    timeline.push(instructionReviewLoop);
 
     // Add test blocks
     for (let blockIdx = 0; blockIdx < settings.blocks.test.count; blockIdx++) {
