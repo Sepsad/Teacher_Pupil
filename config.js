@@ -1,5 +1,8 @@
 /* Experiment parameters */
 const settings = {
+    // Explicitly mark this as pupil-only version
+    isPupilOnly: true,
+    
     // Block structure configuration
     blocks: {
         learning: {
@@ -22,8 +25,6 @@ const settings = {
         ["#27ae60", "#e84393"], // Dark Green and Pink
         ["#2980b9", "#f1c40f"], // Dark Blue and Yellow
         ["#c0392b", "#2ecc71"], // Dark Red and Bright Green
-        // ["#2ecc71", "#9b59b6"] // Green and Purple for instructions
-
     ],
     option_colors: [], // Will be set randomly on initialization
     instruction_colors: ["#2ecc71", "#9b59b6"], // Green and Purple for instructions

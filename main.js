@@ -90,6 +90,19 @@ function logVisit(prolificId) {
     .then(data => {
         if (data.success) {
             console.log('Visit logged successfully');
+            
+            // Store teacher data for use in the experiment
+            if (data.teaching_text) {
+                console.log('Received teacher data');
+                window.teacherData = {
+                    teachingText: data.teaching_text,
+                    colorPair: data.color_pair,
+                    teacherId: data.teacher_prolific_id,
+                    teacherTextId: data.teacher_text_id
+                };
+                // Also store in localStorage as backup
+                localStorage.setItem('teacherPupilTeacherData', JSON.stringify(window.teacherData));
+            }
         } else {
             console.error('Error logging visit:', data.message);
         }
@@ -107,7 +120,7 @@ function saveDataToServer(prolificId, experimentData) {
         // Create the data object to send
         const dataToSend = {
             prolific_id: prolificId,
-            experiment_data: experimentData, // JSON data as string
+            experiment_data: experimentData,
             browser_info: getBrowserInfo()
         };
         
