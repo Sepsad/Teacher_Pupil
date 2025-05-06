@@ -96,16 +96,6 @@ CREATE TABLE IF NOT EXISTS SS_trials_Pupil (
     INDEX idx_block_type (block_type)
 );
 
--- Teaching texts table - imported from teachers, no new teaching_text created by pupils
-CREATE TABLE IF NOT EXISTS SS_teaching_texts_Pupil (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    teacher_id INT NOT NULL,
-    teaching_text TEXT NOT NULL,
-    character_count INT,
-    color_pair VARCHAR(100),
-    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Create table for storing experiment data
 CREATE TABLE IF NOT EXISTS SS_experiment_data_Pupil (
     id INT AUTO_INCREMENT PRIMARY KEY,
