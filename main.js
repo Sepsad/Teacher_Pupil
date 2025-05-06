@@ -1,5 +1,11 @@
 /* Initialize jsPsych and run the experiment */
 
+// Session tracking variables
+const SESSION_TIMEOUT_MS = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+let sessionStartTime = Date.now();
+let sessionTimeoutTimer = null;
+let abandonmentHandlerActive = false;
+
 // Initialize jsPsych
 const jsPsych = initJsPsych({
     
@@ -10,6 +16,19 @@ const jsPsych = initJsPsych({
         // Generate a unique prolific ID (or use one provided via URL parameters)
         const urlParams = new URLSearchParams(window.location.search);
         const prolificId = urlParams.get('prolific_id') || generateProlificId();
+        
+        // Clear any session timeout timers
+        if (sessionTimeoutTimer) {
+            clearTimeout(sessionTimeoutTimer);
+        }
+        
+        // Stop tracking tab/window changes
+        if (tabChangeDetector) {
+            tabChangeDetector.disable();
+        }
+        
+        // Disable abandonment tracking once we're done
+        abandonmentHandlerActive = false;
         
         // Send data to server
         saveDataToServer(prolificId, experimentData);
@@ -65,6 +84,97 @@ function getBrowserInfo() {
         viewportHeight: window.innerHeight,
         timestamp: new Date().toISOString()
     };
+}
+
+// Function to mark a session as abandoned
+function markSessionAsAbandoned(prolificId, reason) {
+    // Only proceed if abandonment handling is active
+    if (!abandonmentHandlerActive) {
+        console.log('Abandonment handling not active, skipping markSessionAsAbandoned');
+        return;
+    }
+    
+    console.log('Marking session as abandoned for participant:', prolificId, 'Reason:', reason);
+    
+    // Create the abandonment data
+    const abandonmentData = {
+        prolific_id: prolificId,
+        reason: reason,
+        browser_info: getBrowserInfo(),
+        session_duration_ms: Date.now() - sessionStartTime
+    };
+    
+    // Use sendBeacon for more reliable delivery during page unload
+    if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(abandonmentData)], {type: 'application/json'});
+        navigator.sendBeacon('db/mark_abandoned.php', blob);
+        console.log('Session abandonment data sent via sendBeacon');
+    } else {
+        // Fallback to fetch with keepalive
+        fetch('db/mark_abandoned.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(abandonmentData),
+            keepalive: true
+        })
+        .then(response => {
+            console.log('Abandonment response status:', response.status);
+        })
+        .catch(error => {
+            console.error('Error marking session as abandoned:', error);
+        });
+    }
+}
+
+// Set up timeout handler to mark session as abandoned after 4 hours
+function setupSessionTimeout(prolificId) {
+    console.log('Setting up session timeout for', SESSION_TIMEOUT_MS, 'ms');
+    
+    // Clear any existing timeout
+    if (sessionTimeoutTimer) {
+        clearTimeout(sessionTimeoutTimer);
+    }
+    
+    // Set new timeout
+    sessionTimeoutTimer = setTimeout(() => {
+        console.log('Session timeout reached');
+        markSessionAsAbandoned(prolificId, 'timeout');
+    }, SESSION_TIMEOUT_MS);
+}
+
+// Setup page unload/visibility handlers
+function setupPageUnloadHandlers(prolificId) {
+    // Enable abandonment handling
+    abandonmentHandlerActive = true;
+    
+    // Handle tab/browser close or navigation away
+    window.addEventListener('beforeunload', function(event) {
+        if (abandonmentHandlerActive) {
+            console.log('beforeunload event triggered');
+            markSessionAsAbandoned(prolificId, 'page_close');
+        }
+    });
+    
+    // Handle page hide (more reliable than beforeunload in some browsers)
+    window.addEventListener('pagehide', function(event) {
+        if (abandonmentHandlerActive) {
+            console.log('pagehide event triggered');
+            markSessionAsAbandoned(prolificId, 'page_hide');
+        }
+    });
+    
+    // Handle device sleep/background
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden && abandonmentHandlerActive) {
+            console.log('Page hidden (visibility change)');
+            // We don't mark as abandoned here, just note the transition
+            // If the tab is closed while hidden, the beforeunload/pagehide will catch it
+        }
+    });
+    
+    console.log('Page unload and visibility handlers set up');
 }
 
 // Function to log the initial visit
@@ -261,6 +371,9 @@ let tabChangeDetector;
 
 // Run the experiment when the page loads
 window.onload = function() {
+    // Reset session tracking
+    sessionStartTime = Date.now();
+    
     // Get prolific ID from URL or generate a new one
     const urlParams = new URLSearchParams(window.location.search);
     let prolificId = urlParams.get('prolific_id');
@@ -283,6 +396,12 @@ window.onload = function() {
         newUrl.searchParams.set('prolific_id', prolificId);
         window.history.replaceState({}, '', newUrl);
     }
+    
+    // Set up abandonment tracking
+    setupPageUnloadHandlers(prolificId);
+    
+    // Set up session timeout
+    setupSessionTimeout(prolificId);
     
     // Log the visit
     logVisit(prolificId);
