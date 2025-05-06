@@ -201,141 +201,196 @@ const displayTeacherInstr = {
     button_label_next: "Continue",
 
     on_start: function(trial) {
-        console.log('[displayTeacherInstr] Starting component and fetching instructions');
+        console.log('[displayTeacherInstr] Starting component and checking for teacherData');
         
-        // Fetch teaching text from server
-        fetch('db/get_teaching.php')
-            .then(response => {
-                console.log('[displayTeacherInstr] Server response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('[displayTeacherInstr] Teaching data received:', data);
-                let teachingText = 'No instructions available.';
+        // Use window.teacherData instead of making a fetch request
+        if (window.teacherData && window.teacherData.teachingText) {
+            // We already have the teacher data from logVisit
+            console.log('[displayTeacherInstr] Using teacher data from window.teacherData');
+            let teachingText = window.teacherData.teachingText;
+            
+            // Format the teaching text with proper styling
+            const newContent = `<div class="instructions">
+                <h2>Teacher Instructions</h2>
+                <p>A previous participant who mastered this task left these instructions to help you:</p>
                 
-                if (data.success && data.teaching_text) {
-                    console.log('[displayTeacherInstr] Using teaching text from database');
-                    teachingText = data.teaching_text;
-                } else if (data.teaching_text) {
-                    console.log('[displayTeacherInstr] Using fallback teaching text from response');
-                    teachingText = data.teaching_text;
-                } else {
-                    // Use a random default instruction if none available from database
-                    const randomIndex = Math.floor(Math.random() * defaultTeachingInstructions.length);
-                    teachingText = defaultTeachingInstructions[randomIndex];
-                    console.log('[displayTeacherInstr] Using random default teaching text:', randomIndex);
-                }
-                
-                // Format the teaching text with proper styling
-                const newContent = `<div class="instructions">
-                    <h2>Teacher Instructions</h2>
-                    <p>A previous participant who mastered this task left these instructions to help you:</p>
+                <div class="teacher-message" style="background-color: #f5f5f5; border: 2px solid #3498db; padding: 20px; margin: 20px auto; border-radius: 8px; text-align: left; max-width: 400px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; overflow-x: hidden;">
+                    <p style="white-space: normal; margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: break-word; hyphens: auto;">${teachingText}</p>
+                </div>
+            </div>`;
+            
+            // Replace the current page with the teaching instructions
+            trial.pages = [newContent];
+            
+            // Store for cases where we need it later
+            window.teacherInstructions = newContent;
+        } else {
+            // Fallback: If window.teacherData is not available, try to fetch from server
+            console.log('[displayTeacherInstr] No teacher data found in window.teacherData, trying server fetch');
+            
+            fetch('db/get_teaching.php')
+                .then(response => {
+                    console.log('[displayTeacherInstr] Server response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('[displayTeacherInstr] Teaching data received:', data);
+                    let teachingText = 'No instructions available.';
                     
-                    <div class="teacher-message" style="background-color: #f5f5f5; border: 2px solid #3498db; padding: 20px; margin: 20px auto; border-radius: 8px; text-align: left; max-width: 400px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; overflow-x: hidden;">
-                        <p style="white-space: normal; margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: break-word; hyphens: auto;">${teachingText}</p>
-                    </div>
-                </div>`;
-                
-                // Replace the current page with the teaching instructions
-                trial.pages = [newContent];
-                
-                // Try all possible selectors to find the content area
-                const targetElement = document.querySelector('#jspsych-target') || document.querySelector('.jspsych-display-element');
-                if (targetElement) {
-                    console.log('[displayTeacherInstr] Found display element, updating content');
-                    
-                    // Try multiple potential selectors for the actual content area
-                    const potentialSelectors = [
-                        '.jspsych-instructions-page', 
-                        '.jspsych-content div:not(.jspsych-instructions-nav)',
-                        '.jspsych-content > div',
-                        '#jspsych-instructions-page-0'
-                    ];
-                    
-                    let contentFound = false;
-                    
-                    // Try direct DOM traversal to find the content area
-                    const contentElements = targetElement.querySelectorAll('.jspsych-content > *');
-                    for (const element of contentElements) {
-                        if (element.classList && !element.classList.contains('jspsych-instructions-nav')) {
-                            console.log('[displayTeacherInstr] Found content via DOM traversal');
-                            element.innerHTML = newContent;
-                            contentFound = true;
-                            break;
+                    if (data.success && data.teaching_text) {
+                        console.log('[displayTeacherInstr] Using teaching text from database');
+                        teachingText = data.teaching_text;
+                        
+                        // Store the data for future use
+                        if (!window.teacherData) {
+                            window.teacherData = {
+                                teachingText: data.teaching_text,
+                                colorPair: data.color_pair,
+                                teacherId: data.teacher_id
+                            };
+                            // Also store in localStorage as backup
+                            localStorage.setItem('teacherPupilTeacherData', JSON.stringify(window.teacherData));
+                            
+                            // Now that we have teacher data, set the color pair
+                            if (typeof setTeacherColorPair === 'function') {
+                                setTeacherColorPair();
+                                console.log('[displayTeacherInstr] Set color pair based on fetched teacher data');
+                            }
                         }
+                    } else if (data.teaching_text) {
+                        console.log('[displayTeacherInstr] Using fallback teaching text from response');
+                        teachingText = data.teaching_text;
+                    } else {
+                        // Use a random default instruction if none available from database
+                        const randomIndex = Math.floor(Math.random() * defaultTeachingInstructions.length);
+                        teachingText = defaultTeachingInstructions[randomIndex];
+                        console.log('[displayTeacherInstr] Using random default teaching text:', randomIndex);
                     }
                     
-                    // If not found via traversal, try the selectors
-                    if (!contentFound) {
-                        for (const selector of potentialSelectors) {
-                            const element = targetElement.querySelector(selector);
-                            if (element) {
-                                console.log('[displayTeacherInstr] Found content with selector:', selector);
+                    // Format the teaching text with proper styling
+                    const newContent = `<div class="instructions">
+                        <h2>Teacher Instructions</h2>
+                        <p>A previous participant who mastered this task left these instructions to help you:</p>
+                        
+                        <div class="teacher-message" style="background-color: #f5f5f5; border: 2px solid #3498db; padding: 20px; margin: 20px auto; border-radius: 8px; text-align: left; max-width: 400px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; overflow-x: hidden;">
+                            <p style="white-space: normal; margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: break-word; hyphens: auto;">${teachingText}</p>
+                        </div>
+                    </div>`;
+                    
+                    // Replace the current page with the teaching instructions
+                    trial.pages = [newContent];
+                    
+                    // Try all possible selectors to find the content area
+                    const targetElement = document.querySelector('#jspsych-target') || document.querySelector('.jspsych-display-element');
+                    if (targetElement) {
+                        console.log('[displayTeacherInstr] Found display element, updating content');
+                        
+                        // Try multiple potential selectors for the actual content area
+                        const potentialSelectors = [
+                            '.jspsych-instructions-page', 
+                            '.jspsych-content div:not(.jspsych-instructions-nav)',
+                            '.jspsych-content > div',
+                            '#jspsych-instructions-page-0'
+                        ];
+                        
+                        let contentFound = false;
+                        
+                        // Try direct DOM traversal to find the content area
+                        const contentElements = targetElement.querySelectorAll('.jspsych-content > *');
+                        for (const element of contentElements) {
+                            if (element.classList && !element.classList.contains('jspsych-instructions-nav')) {
+                                console.log('[displayTeacherInstr] Found content via DOM traversal');
                                 element.innerHTML = newContent;
                                 contentFound = true;
                                 break;
                             }
                         }
-                    }
-                    
-                    // Last resort - find any element that contains the loader
-                    if (!contentFound) {
-                        const loaderElement = targetElement.querySelector('.loader');
-                        if (loaderElement) {
-                            console.log('[displayTeacherInstr] Found content via loader');
-                            // Go up to find the container of the loader
-                            let container = loaderElement.parentElement;
-                            while (container && container !== targetElement) {
-                                if (container.classList.contains('instructions') || 
-                                    !container.className.includes('jspsych')) {
-                                    container.innerHTML = newContent;
+                        
+                        // If not found via traversal, try the selectors
+                        if (!contentFound) {
+                            for (const selector of potentialSelectors) {
+                                const element = targetElement.querySelector(selector);
+                                if (element) {
+                                    console.log('[displayTeacherInstr] Found content with selector:', selector);
+                                    element.innerHTML = newContent;
                                     contentFound = true;
                                     break;
                                 }
-                                container = container.parentElement;
                             }
                         }
-                    }
-                    
-                    if (contentFound) {
-                        console.log('[displayTeacherInstr] Successfully updated instructions content');
-                    } else {
-                        console.warn('[displayTeacherInstr] Content area not found using any selector method');
                         
-                        // Store the content for later use
+                        // Last resort - find any element that contains the loader
+                        if (!contentFound) {
+                            const loaderElement = targetElement.querySelector('.loader');
+                            if (loaderElement) {
+                                console.log('[displayTeacherInstr] Found content via loader');
+                                // Go up to find the container of the loader
+                                let container = loaderElement.parentElement;
+                                while (container && container !== targetElement) {
+                                    if (container.classList.contains('instructions') || 
+                                        !container.className.includes('jspsych')) {
+                                        container.innerHTML = newContent;
+                                        contentFound = true;
+                                        break;
+                                    }
+                                    container = container.parentElement;
+                                }
+                            }
+                        }
+                        
+                        if (contentFound) {
+                            console.log('[displayTeacherInstr] Successfully updated instructions content');
+                        } else {
+                            console.warn('[displayTeacherInstr] Content area not found using any selector method');
+                            
+                            // Store the content for later use
+                            window.teacherInstructions = newContent;
+                        }
+                    } else {
+                        console.warn('[displayTeacherInstr] Display element not found');
+                        // Store for later
                         window.teacherInstructions = newContent;
                     }
-                } else {
-                    console.warn('[displayTeacherInstr] Display element not found');
-                    // Store for later
-                    window.teacherInstructions = newContent;
-                }
-            })
-            .catch(error => {
-                console.error('[displayTeacherInstr] Error fetching teaching instructions:', error);
-                // Use a random default instruction if fetch fails
-                const randomIndex = Math.floor(Math.random() * defaultTeachingInstructions.length);
-                const teachingText = defaultTeachingInstructions[randomIndex];
-                console.log('[displayTeacherInstr] Error occurred, using random default teaching text:', randomIndex);
-                
-                const newContent = `<div class="instructions">
-                    <h2>Teacher Instructions</h2>
-                    <p>A previous participant who mastered this task left these instructions to help you:</p>
+                })
+                .catch(error => {
+                    console.error('[displayTeacherInstr] Error fetching teaching instructions:', error);
+                    // Use a random default instruction if fetch fails
+                    const randomIndex = Math.floor(Math.random() * defaultTeachingInstructions.length);
+                    const teachingText = defaultTeachingInstructions[randomIndex];
+                    console.log('[displayTeacherInstr] Error occurred, using random default teaching text:', randomIndex);
                     
-                    <div class="teacher-message" style="background-color: #f5f5f5; border: 2px solid #3498db; padding: 20px; margin: 20px auto; border-radius: 8px; text-align: left; max-width: 400px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; overflow-x: hidden;">
-                        <p style="white-space: normal; margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: break-word; hyphens: auto;">${teachingText}</p>
-                    </div>
-                </div>`;
-                
-                // Update the pages property
-                trial.pages = [newContent];
-            });
+                    const newContent = `<div class="instructions">
+                        <h2>Teacher Instructions</h2>
+                        <p>A previous participant who mastered this task left these instructions to help you:</p>
+                        
+                        <div class="teacher-message" style="background-color: #f5f5f5; border: 2px solid #3498db; padding: 20px; margin: 20px auto; border-radius: 8px; text-align: left; max-width: 400px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; overflow-x: hidden;">
+                            <p style="white-space: normal; margin: 0; font-size: 16px; line-height: 1.5; overflow-wrap: break-word; hyphens: auto;">${teachingText}</p>
+                        </div>
+                    </div>`;
+                    
+                    // Update the pages property
+                    trial.pages = [newContent];
+                });
+        }
     },
     on_load: function() {
         console.log('[displayTeacherInstr] Component loaded and visible');
+        
+        // If we have window.teacherData, update the content immediately
+        if (window.teacherData && window.teacherData.teachingText && window.teacherInstructions) {
+            // Find the instruction page element now that it's definitely in the DOM
+            const contentElement = document.querySelector('.jspsych-instructions-page') || 
+                                   document.querySelector('.jspsych-content > div:not(.jspsych-instructions-nav)');
+            
+            if (contentElement) {
+                contentElement.innerHTML = window.teacherInstructions;
+                console.log('[displayTeacherInstr] Successfully applied stored instructions on load');
+            }
+            return;
+        }
         
         // Check if we have stored instructions content from fetch before DOM was ready
         if (window.teacherInstructions) {
@@ -390,6 +445,12 @@ const instructionReviewLoop = {
             },
             on_finish: function(data) {
                 console.log('Instruction choice made:', data.response === 0 ? 'Read Again' : 'Begin Game');
+                
+                // Make sure we have the teacher's color pair before starting the game
+                if (data.response === 1 && window.teacherData && window.teacherData.colorPair && typeof setTeacherColorPair === 'function') {
+                    console.log('Ensuring color pair is set correctly before starting game');
+                    setTeacherColorPair();
+                }
             }
         }
     ],
@@ -398,6 +459,7 @@ const instructionReviewLoop = {
         const lastTrialData = data.values().slice(-1)[0];
         const shouldLoop = lastTrialData.response === 0;
         console.log('instructionReviewLoop decision:', shouldLoop ? 'Looping back to instructions' : 'Proceeding to game');
+        
         // If they chose "Read Instructions Again" (option 0), loop again
         return shouldLoop;
     }
