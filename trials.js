@@ -890,11 +890,8 @@ function buildTimeline() {
         type: jsPsychHtmlButtonResponse,
         stimulus: `
             <div class="instructions">
-                <h2>Learning Block</h2>
-                <p>Great job on the test phase!</p>
-                <p>Now you'll have a chance to learn more about the task with feedback.</p>
-                <p><strong>In this learning phase, you'll see immediate feedback after each choice.</strong></p>
-                <p>This will help you better understand which choices lead to rewards.</p>
+                <p>Great job on the first phase!</p>
+                <p>Now you will play the game again. All the rules you have already learned are still valid. Yet, this time we will also show you briefly the points you have earned after clicking on each option.</p>
             </div>
         `,
         choices: ["Begin Learning Phase"],
@@ -969,8 +966,7 @@ function buildTimeline() {
             return `
                 <div class="instructions">
                     <h2>Task Complete!</h2>
-                    <p>Thank you for participating in both the test and learning phases.</p>
-                    <p>Your final score: <strong>${settings.totalReward} points</strong></p>
+                    <p>Thank you for participating!</p>
                 </div>
             `;
         },
