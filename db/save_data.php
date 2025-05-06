@@ -168,18 +168,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         mysqli_stmt_close($json_stmt);
         
-        // Dynamically construct the SQL statement for inserting trials with all columns
-        // Note: Using SS_trials_Pupil instead of SS_trials_TEACH for pupil data
+        // Dynamically construct the SQL statement for inserting trials with the optimized columns
         $trial_columns = [
             "participant_id", "trial_index", "condition_trial_index", "task", 
             "trial_type_id", "block_type", "rewarding_option", "response", 
             "chosen_option", "reward", "total_reward", "rt", "accuracy", "pair_id",
-            "success", "timeout", "failed_images", "failed_audio", "failed_video",
-            "trial_type", "time_elapsed", "internal_node_id", "view_history", "stimulus",
-            "answers", "q1", "q2", "q3", "passed_quiz", "tq1", "tq2", "tq3",
-            "passed_teaching_quiz", "unchosen_option", "chosen_color", "unchosen_color",
-            "chosen_reward_probability", "unchosen_reward_probability", "chosen_reward_points",
-            "unchosen_reward_points", "color_left", "color_right", "color_mapping",
+            "trial_type", "time_elapsed", "internal_node_id", 
+            "unchosen_option", "chosen_color", "unchosen_color", 
+            "chosen_reward_probability", "unchosen_reward_probability", 
+            "chosen_reward_points", "unchosen_reward_points", 
+            "color_left", "color_right", "color_mapping",
             "phase", "reward_probability", "square_order", "trial_data"
         ];
         
@@ -222,25 +220,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "rt" => ["d", null],
                 "accuracy" => ["i", null],
                 "pair_id" => ["s", null],
-                "success" => ["i", null],
-                "timeout" => ["i", null],
-                "failed_images" => ["s", null],
-                "failed_audio" => ["s", null],
-                "failed_video" => ["s", null],
                 "trial_type" => ["s", null],
                 "time_elapsed" => ["i", null],
                 "internal_node_id" => ["s", null],
-                "view_history" => ["s", null],
-                "stimulus" => ["s", null],
-                "answers" => ["s", null],
-                "q1" => ["s", null],
-                "q2" => ["s", null],
-                "q3" => ["s", null],
-                "passed_quiz" => ["i", null],
-                "tq1" => ["s", null],
-                "tq2" => ["s", null],
-                "tq3" => ["s", null],
-                "passed_teaching_quiz" => ["i", null],
                 "unchosen_option" => ["i", null],
                 "chosen_color" => ["s", null],
                 "unchosen_color" => ["s", null],

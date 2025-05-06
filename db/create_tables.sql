@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS SS_participants_Pupil (
 --    UNIQUE KEY (prolific_id)
 -- );
 
--- Updated trials table - note NO teaching_text field needed for pupil-submitted teaching
+-- Updated trials table with optimized columns relevant for pupil experiment
 CREATE TABLE IF NOT EXISTS SS_trials_Pupil (
     id INT AUTO_INCREMENT PRIMARY KEY,
     participant_id INT NOT NULL,
@@ -48,27 +48,9 @@ CREATE TABLE IF NOT EXISTS SS_trials_Pupil (
     pair_id VARCHAR(30),
     
     -- JSPsych-specific fields
-    success TINYINT(1),
-    timeout TINYINT(1),
-    failed_images TEXT,
-    failed_audio TEXT,
-    failed_video TEXT,
     trial_type VARCHAR(50),
     time_elapsed INT,
     internal_node_id VARCHAR(50),
-    view_history TEXT,
-    stimulus TEXT,
-    
-    -- Quiz-related fields
-    answers TEXT,
-    q1 VARCHAR(10),
-    q2 VARCHAR(10),
-    q3 VARCHAR(10),
-    passed_quiz TINYINT(1),
-    tq1 VARCHAR(10),
-    tq2 VARCHAR(10),
-    tq3 VARCHAR(10),
-    passed_teaching_quiz TINYINT(1),
     
     -- Choice-specific fields
     unchosen_option INT,
