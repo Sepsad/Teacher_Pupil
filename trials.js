@@ -169,7 +169,7 @@ const teachingInstructions = {
             <h2>Here's the catch!!! READ CAREFULLY </h2>
             <p>A person with experience in this task has writen down a set of instructions <b>specifically to help you</b>. </p>
             <p><b>Keep in mind that this "teacher" knows the task, and wants you to win as many points as possible!!</b></strong>.</p>
-            '<img src="images/instructions/Pupil_board.png" style="padding: 1rem; text-align: center" class = "img-fluid">'
+            '<img src="images/instructions/Pupil_board.jpg" style="padding: 1rem; text-align: center" class = "img-fluid">'
         </div>`,
         `<div class="instructions">
             <h2>Remember</h2>
