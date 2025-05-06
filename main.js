@@ -102,6 +102,14 @@ function logVisit(prolificId) {
                 };
                 // Also store in localStorage as backup
                 localStorage.setItem('teacherPupilTeacherData', JSON.stringify(window.teacherData));
+                
+                // Now that we have teacher data, set the color pair
+                if (typeof setTeacherColorPair === 'function') {
+                    setTeacherColorPair();
+                    console.log('Set color pair based on teacher data');
+                } else {
+                    console.warn('setTeacherColorPair function not available');
+                }
             }
         } else {
             console.error('Error logging visit:', data.message);

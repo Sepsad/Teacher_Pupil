@@ -26,7 +26,7 @@ const settings = {
         ["#2980b9", "#f1c40f"], // Dark Blue and Yellow
         ["#c0392b", "#2ecc71"], // Dark Red and Bright Green
     ],
-    option_colors: [], // Will be set randomly on initialization
+    option_colors: [], // Will be set based on teacher's color pair
     instruction_colors: ["#2ecc71", "#9b59b6"], // Green and Purple for instructions
     totalReward: 0,
     currentBlock: 0,  // Track the current block number
@@ -82,11 +82,53 @@ function calculateTrialCounts() {
     console.log("Trial counts:", settings.trialTypes.map(t => ({id: t.id, count: t.count})));
 }
 
-// Function to randomly select a color pair
+// Function to use teacher's color pair from window.teacherData
+function setTeacherColorPair() {
+    if (window.teacherData && window.teacherData.colorPair) {
+        try {
+            // First check if colorPair is a JSON string that needs parsing
+            let colorPairData = window.teacherData.colorPair;
+            
+            if (typeof colorPairData === 'string' && 
+               (colorPairData.startsWith('[') || colorPairData.startsWith('{'))) {
+                try {
+                    colorPairData = JSON.parse(colorPairData);
+                } catch (e) {
+                    console.error('Error parsing teacher color pair:', e);
+                }
+            }
+            
+            // If colorPair is a direct array, use it
+            if (Array.isArray(colorPairData)) {
+                settings.option_colors = colorPairData;
+                console.log("Using teacher's color pair (array format):", settings.option_colors);
+                return;
+            }
+            
+            // If colorPair is an object with indices (like {0: "#color1", 1: "#color2"})
+            if (colorPairData && typeof colorPairData === 'object') {
+                const colorArray = [colorPairData[0], colorPairData[1]];
+                settings.option_colors = colorArray;
+                console.log("Using teacher's color pair (object format):", settings.option_colors);
+                return;
+            }
+        } catch (error) {
+            console.error("Error setting teacher color pair:", error);
+            // Fall back to random selection if error occurs
+            selectRandomColorPair();
+        }
+    } else {
+        // Fall back to random selection if teacher data is not available
+        console.log("Teacher color pair not found, using random selection");
+        selectRandomColorPair();
+    }
+}
+
+// Function to randomly select a color pair (backup if teacher color pair is not available)
 function selectRandomColorPair() {
     const randomIndex = Math.floor(Math.random() * settings.colorPairs.length);
     settings.option_colors = settings.colorPairs[randomIndex];
-    console.log("Selected color pair:", settings.option_colors);
+    console.log("Selected random color pair:", settings.option_colors);
 }
 
 // Calculate total trials across all learning blocks
@@ -106,6 +148,6 @@ function initializeBlockSettings() {
     console.log(`Test phase has ${settings.blocks.test.count} blocks of ${settings.blocks.test.trialsPerBlock} trials each`);
 }
 
-// Call initialization functions
-selectRandomColorPair();
+// Initialization is delayed until teacherData is available
+// Don't call selectRandomColorPair() here anymore
 initializeBlockSettings();
