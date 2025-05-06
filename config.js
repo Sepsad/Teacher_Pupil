@@ -7,7 +7,7 @@ const settings = {
     blocks: {
         learning: {
             count: 1,           // Number of learning blocks
-            trialsPerBlock: 120, // Trials per learning block (should be divisible by 3)
+            trialsPerBlock: 30, // Trials per learning block (should be divisible by 3)
             showBlockBreaks: true // Show break between blocks
         },
         test: {

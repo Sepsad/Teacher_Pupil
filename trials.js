@@ -620,6 +620,197 @@ function generateTestBlockSequence() {
     return sequence;
 }
 
+// Function to create a block break screen
+function createBlockBreakScreen(phase, blockIdx, totalBlocks) {
+    return {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+            <div class="instructions">
+                <h2>Take a short break</h2>
+                <p>You have completed block ${blockIdx + 1} of ${totalBlocks} in the ${phase} phase.</p>
+                <p>You may take a short break. Continue when you are ready to proceed.</p>
+                <p>Your current score: ${settings.totalReward} points</p>
+            </div>
+        `,
+        choices: ["Continue"],
+        data: {
+            task: 'break',
+            phase: phase,
+            block_number: blockIdx
+        }
+    };
+}
+
+// Create a choice trial with feedback
+function createChoiceTrial(trialType, trialIndex, squareOrder) {
+    // Calculate condition-specific trial index
+    const conditionTrialCounts = {};
+    
+    // First create the choice part of the trial
+    const choiceTrial = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: function() {
+            return createTrialHTML(trialType, squareOrder, trialIndex);
+        },
+        choices: [],  // Empty choices because we're using custom buttons
+        button_html: null,  // No default button HTML
+        margin_vertical: "80px",
+        margin_horizontal: "40px",
+        data: {
+            trial_index: trialIndex,
+            task: 'choice',
+            square_order: squareOrder,
+            trial_type_id: trialType.id,
+            rewarding_option: trialType.rewardingOption,
+            reward_probability: trialType.probability,
+            phase: 'learning',
+            block_type: 'learning'
+        },
+        on_start: function(trial) {
+            // Add event listeners after the trial renders
+            setTimeout(function() {
+                document.querySelectorAll('.jspsych-html-button-response-button').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        const choice = parseInt(this.getAttribute('data-choice'));
+                        
+                        // Highlight the selected option
+                        this.classList.add('selected');
+                        
+                        // Store response data
+                        const response_data = {
+                            response: choice,
+                            rt: performance.now() - trial.startTime
+                        };
+                        
+                        // Wait 250ms before ending the trial
+                        setTimeout(() => {
+                            jsPsych.finishTrial(response_data);
+                        }, 250);
+                    });
+                });
+            }, 0);
+        },
+        on_load: function() {
+            this.startTime = performance.now();
+        },
+        on_finish: function(data) {
+            const chosenOption = data.response;
+            const unchosenOption = chosenOption === 0 ? 1 : 0;
+            const reward = getReward(chosenOption, trialType);
+            settings.totalReward += reward;
+            
+            // Get condition-specific trial index
+            if (!conditionTrialCounts[trialType.id]) {
+                conditionTrialCounts[trialType.id] = 0;
+            }
+            const conditionTrialIndex = conditionTrialCounts[trialType.id]++;
+            
+            // Store all required data fields
+            data.chosen_option = chosenOption;
+            data.unchosen_option = unchosenOption;
+            data.condition_trial_index = conditionTrialIndex;
+            data.chosen_color = settings.option_colors[squareOrder[data.response]];
+            data.unchosen_color = settings.option_colors[squareOrder[unchosenOption]];
+            data.pair_id = settings.option_colors.join('-');
+            data.chosen_reward_probability = trialType.rewardingOption === chosenOption ? trialType.probability : 0;
+            data.unchosen_reward_probability = trialType.rewardingOption === unchosenOption ? trialType.probability : 0;
+            data.chosen_reward_points = trialType.rewardingOption === chosenOption ? trialType.reward : 0;
+            data.unchosen_reward_points = trialType.rewardingOption === unchosenOption ? trialType.reward : 0;
+            data.reward = reward;
+            data.total_reward = settings.totalReward;
+            data.accuracy = chosenOption === trialType.rewardingOption ? 1 : 0;
+            
+            // Store color information
+            data.color_left = settings.option_colors[squareOrder[0]];
+            data.color_right = settings.option_colors[squareOrder[1]];
+            data.color_mapping = {
+                0: settings.option_colors[0],
+                1: settings.option_colors[1]
+            };
+        }
+    };
+    
+    // Create the feedback part of the trial
+    const feedbackTrial = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: function() {
+            // Get data from previous trial
+            const prevTrial = jsPsych.data.get().last(1).values()[0];
+            const chosenOption = prevTrial.chosen_option;
+            const reward = prevTrial.reward;
+            
+            return createTrialHTML(trialType, squareOrder, trialIndex, true, chosenOption, reward);
+        },
+        choices: ["Continue"],
+        data: {
+            trial_index: trialIndex,
+            task: 'feedback',
+            square_order: squareOrder,
+            trial_type_id: trialType.id,
+            rewarding_option: trialType.rewardingOption,
+            reward_probability: trialType.probability,
+            phase: 'learning',
+            block_type: 'learning'
+        },
+        on_finish: function(data) {
+            // Get data from previous (choice) trial
+            const prevTrial = jsPsych.data.get().last(2).values()[0];
+            
+            // Copy relevant data from choice trial
+            data.chosen_option = prevTrial.chosen_option;
+            data.unchosen_option = prevTrial.unchosen_option;
+            data.condition_trial_index = prevTrial.condition_trial_index;
+            data.chosen_color = prevTrial.chosen_color;
+            data.unchosen_color = prevTrial.unchosen_color;
+            data.pair_id = prevTrial.pair_id;
+            data.chosen_reward_probability = prevTrial.chosen_reward_probability;
+            data.unchosen_reward_probability = prevTrial.unchosen_reward_probability;
+            data.chosen_reward_points = prevTrial.chosen_reward_points;
+            data.unchosen_reward_points = prevTrial.unchosen_reward_points;
+            data.reward = prevTrial.reward;
+            data.total_reward = prevTrial.total_reward;
+            data.accuracy = prevTrial.accuracy;
+            data.response = prevTrial.response;
+            data.rt = prevTrial.rt;
+            
+            // Store color information
+            data.color_left = prevTrial.color_left;
+            data.color_right = prevTrial.color_right;
+            data.color_mapping = prevTrial.color_mapping;
+        }
+    };
+    
+    return { choiceTrial, feedbackTrial };
+}
+
+// Generate a learning block sequence with equal distribution of trial types
+function generateLearningBlockSequence() {
+    let sequence = [];
+    const trialsPerBlock = settings.blocks.learning.trialsPerBlock;
+    const trialsPerType = Math.floor(trialsPerBlock / settings.trialTypes.length);
+    
+    // Create arrays for each trial type
+    settings.trialTypes.forEach(type => {
+        for (let i = 0; i < trialsPerType; i++) {
+            sequence.push({...type});
+        }
+    });
+    
+    // Add remaining trials if needed
+    const remaining = trialsPerBlock - (trialsPerType * settings.trialTypes.length);
+    for (let i = 0; i < remaining; i++) {
+        sequence.push({...settings.trialTypes[i]});
+    }
+    
+    // Shuffle the sequence to interleave trial types
+    for (let i = sequence.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+    }
+    
+    return sequence;
+}
+
 // Build the experiment timeline
 function buildTimeline() {
     // Create the timeline
@@ -694,8 +885,100 @@ function buildTimeline() {
         }
     }
     
+    // Add learning block introduction after the test phase
+    timeline.push({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+            <div class="instructions">
+                <h2>Learning Block</h2>
+                <p>Great job on the test phase!</p>
+                <p>Now you'll have a chance to learn more about the task with feedback.</p>
+                <p><strong>In this learning phase, you'll see immediate feedback after each choice.</strong></p>
+                <p>This will help you better understand which choices lead to rewards.</p>
+            </div>
+        `,
+        choices: ["Begin Learning Phase"],
+        data: {
+            task: 'block_start',
+            phase: 'learning',
+            block_number: 0
+        }
+    });
+    
+    // Add learning blocks
+    for (let blockIdx = 0; blockIdx < settings.blocks.learning.count; blockIdx++) {
+        // Add block start instruction if it's not the first block
+        if (blockIdx > 0) {
+            timeline.push({
+                type: jsPsychHtmlButtonResponse,
+                stimulus: `
+                    <div class="instructions">
+                        <h2>Learning Block ${blockIdx + 1}</h2>
+                        <p>You are about to start learning block ${blockIdx + 1} of ${settings.blocks.learning.count}.</p>
+                        <p>Remember, you will receive feedback after each choice in this phase.</p>
+                    </div>
+                `,
+                choices: ["Begin Block"],
+                data: {
+                    task: 'block_start',
+                    phase: 'learning',
+                    block_number: blockIdx
+                }
+            });
+        }
+        
+        // Generate learning trial sequence for this block
+        const learningBlockSequence = generateLearningBlockSequence();
+        
+        // Calculate global trial index base for this block
+        // We offset from the test blocks
+        const testTrialsCount = settings.blocks.test.count * settings.blocks.test.trialsPerBlock;
+        const blockTrialOffset = testTrialsCount + (blockIdx * settings.blocks.learning.trialsPerBlock);
+        
+        // Add learning trials to the timeline
+        for (let i = 0; i < learningBlockSequence.length; i++) {
+            // Get the trial type for this learning trial
+            const trialType = learningBlockSequence[i];
+            
+            // Calculate global trial index
+            const globalTrialIndex = blockTrialOffset + i;
+            
+            // Generate random order for this trial pair
+            const squareOrder = getRandomSquareOrder();
+            
+            // Create learning trial with feedback
+            const { choiceTrial, feedbackTrial } = createChoiceTrial(trialType, globalTrialIndex, squareOrder);
+            
+            // Add choice trial
+            timeline.push(choiceTrial);
+            
+            // Add feedback trial
+            timeline.push(feedbackTrial);
+        }
+        
+        // Add block break if not the last block
+        if (blockIdx < settings.blocks.learning.count - 1 && settings.blocks.learning.showBlockBreaks) {
+            timeline.push(createBlockBreakScreen('learning', blockIdx, settings.blocks.learning.count));
+        }
+    }
+    
     // Add final results
-    timeline.push(createFinalScreen());
+    timeline.push({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: function() {
+            return `
+                <div class="instructions">
+                    <h2>Task Complete!</h2>
+                    <p>Thank you for participating in both the test and learning phases.</p>
+                    <p>Your final score: <strong>${settings.totalReward} points</strong></p>
+                </div>
+            `;
+        },
+        choices: ["Finish"],
+        data: {
+            task: 'final_screen'
+        }
+    });
     
     return timeline;
 }
